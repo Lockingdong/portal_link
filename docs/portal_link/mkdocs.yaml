@@ -1,0 +1,15 @@
+site_name: Portal Link Documentation
+
+nav:
+  - Home: index.md
+  - Modules:
+    - User:
+      - Domain:
+        - User: modules/user/domain/user_entity.md
+      - Usecase:
+        - Sign Up: modules/user/usecase/sign_up_uc.md
+
+docs_dir: docs
+
+theme:
+  name: material

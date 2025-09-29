@@ -1,0 +1,14 @@
+Table users {
+  id integer [primary key, increment, note: "使用者的唯一標識符"]
+  name varchar(255) [not null, note: "使用者的全名"]
+  email varchar(255) [not null, unique, note: '使用者的電子郵件地址，必須是唯一的']
+  password varchar(255) [not null, note: "使用者的密碼"]
+  created_at timestamp [default: `now()`, note: "建立時間"]
+  updated_at timestamp [default: `now()`, note: "更新時間"]
+  
+  indexes {
+    email [unique, name: "idx_users_email"]
+    created_at [name: "idx_users_created_at"]
+  }
+}
+
