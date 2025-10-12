@@ -1,0 +1,214 @@
+openapi: 3.0.3
+info:
+  title: Portal Link API
+  description: Portal Link 用戶認證與管理 API
+  version: 1.0.0
+  contact:
+    name: Portal Link Team
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: 開發環境
+  - url: https://api.portallink.com/v1
+    description: 生產環境
+
+tags:
+  - name: user
+    description: 用戶相關操作
+
+paths:
+  /user/signup:
+    post:
+      tags:
+        - user
+      summary: 用戶註冊
+      description: 允許新使用者註冊 Portal Link 帳號
+      operationId: signUp
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignUpRequest'
+            example:
+              name: "張三"
+              email: "zhangsan@example.com"
+              password: "password123"
+      responses:
+        '200':
+          description: 註冊成功，返回 access token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SignUpResponse'
+              example:
+                access_token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        '400':
+          description: 輸入參數驗證失敗
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidParams:
+                  summary: 參數驗證失敗
+                  value:
+                    error: "ErrInvalidParams"
+                    message: "輸入參數不符合驗證規則"
+                emailExists:
+                  summary: 電子郵件已存在
+                  value:
+                    error: "ErrEmailExists"
+                    message: "此電子郵件地址已被註冊"
+        '500':
+          description: 伺服器內部錯誤
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "ErrInternal"
+                message: "伺服器內部錯誤"
+
+  /user/signin:
+    post:
+      tags:
+        - user
+      summary: 用戶登入
+      description: 允許已註冊使用者登入 Portal Link 帳號
+      operationId: signIn
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignInRequest'
+            example:
+              email: "zhangsan@example.com"
+              password: "password123"
+      responses:
+        '200':
+          description: 登入成功，返回 access token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SignInResponse'
+              example:
+                access_token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        '400':
+          description: 輸入參數驗證失敗
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "ErrInvalidParams"
+                message: "輸入參數不符合驗證規則"
+        '401':
+          description: 認證失敗
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "ErrInvalidCredentials"
+                message: "電子郵件或密碼錯誤"
+        '500':
+          description: 伺服器內部錯誤
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "ErrInternal"
+                message: "伺服器內部錯誤"
+
+components:
+  schemas:
+    SignUpRequest:
+      type: object
+      required:
+        - name
+        - email
+        - password
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: 使用者全名
+          example: "張三"
+        email:
+          type: string
+          format: email
+          minLength: 1
+          maxLength: 255
+          description: 電子郵件地址
+          example: "zhangsan@example.com"
+        password:
+          type: string
+          minLength: 8
+          pattern: '^(?=.*[A-Za-z])(?=.*\d).+$'
+          description: 使用者密碼（最少 8 字元，需包含英文和數字）
+          example: "password123"
+
+    SignUpResponse:
+      type: object
+      required:
+        - access_token
+      properties:
+        access_token:
+          type: string
+          description: 訪問令牌（有效期 1 天）
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+
+    SignInRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+          maxLength: 255
+          description: 電子郵件地址
+          example: "zhangsan@example.com"
+        password:
+          type: string
+          minLength: 8
+          description: 使用者密碼
+          example: "password123"
+
+    SignInResponse:
+      type: object
+      required:
+        - access_token
+      properties:
+        access_token:
+          type: string
+          description: 訪問令牌（有效期 1 天）
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          description: 錯誤代碼
+          example: "ErrInvalidParams"
+        message:
+          type: string
+          description: 錯誤訊息
+          example: "輸入參數不符合驗證規則"
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      description: 使用 access_token 進行認證
+

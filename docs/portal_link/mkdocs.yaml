@@ -8,6 +8,7 @@ nav:
         - User: modules/user/domain/user_entity.md
       - Usecase:
         - Sign Up: modules/user/usecase/sign_up_uc.md
+        - Sign In: modules/user/usecase/sign_in_uc.md
 
 docs_dir: docs
 

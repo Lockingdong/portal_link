@@ -1,1 +1,17 @@
-.env.example
+# Environment variables (contains sensitive information)
+.env
+
+# IDE
+.vscode/
+.idea/
+
+# Build artifacts
+bin/
+dist/
+
+# Test coverage
+*.out
+coverage.html
+
+# OS files
+.DS_Store

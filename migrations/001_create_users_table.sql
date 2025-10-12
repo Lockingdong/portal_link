@@ -1,4 +1,5 @@
--- +migrate Up
+-- +goose Up
+-- +goose StatementBegin
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
@@ -20,8 +21,11 @@ COMMENT ON COLUMN users.email IS '使用者的電子郵件地址，必須是唯�
 COMMENT ON COLUMN users.password IS '使用者的密碼';
 COMMENT ON COLUMN users.created_at IS '建立時間';
 COMMENT ON COLUMN users.updated_at IS '更新時間';
+-- +goose StatementEnd
 
--- +migrate Down
+-- +goose Down
+-- +goose StatementBegin
 DROP INDEX IF EXISTS idx_users_created_at;
 DROP INDEX IF EXISTS idx_users_email;
 DROP TABLE IF EXISTS users;
+-- +goose StatementEnd

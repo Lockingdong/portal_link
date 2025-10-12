@@ -1,21 +1,32 @@
 package main
 
 import (
-	"fmt"
-	"net/http"
+	"log"
+	"portal_link/modules/user/adapter/restapi"
 	"portal_link/pkg"
 	"portal_link/pkg/config"
+
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
+	// 初始化配置和資料庫連線
 	config.Init()
 	db := pkg.NewPG(config.GetDBConfig().DSN())
 	defer db.Close()
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "Hello, World!")
+	r := gin.Default()
+	if err := restapi.NewUserHandler(r, db); err != nil {
+		log.Fatal(err)
+	}
+
+	// 根路由
+	r.GET("/", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"message": "Portal Link API Server is running!",
+		})
 	})
 
-	fmt.Println("Server is running on port 8080...")
-	http.ListenAndServe(":8080", nil)
+	// 啟動服務器
+	r.Run(":8080")
 }
