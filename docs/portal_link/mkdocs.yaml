@@ -4,11 +4,21 @@ nav:
   - Home: index.md
   - Modules:
     - User:
+      - Adapter:
+        - RestAPI: modules/user/adapter/restapi/user_handler.md
       - Domain:
+        - Error: modules/user/domain/error.md
         - User: modules/user/domain/user_entity.md
       - Usecase:
         - Sign Up: modules/user/usecase/sign_up_uc.md
         - Sign In: modules/user/usecase/sign_in_uc.md
+    - Portal Page:
+      - Domain:
+        - Enum: modules/portal_page/domain/enum.md
+        - Portal Page: modules/portal_page/domain/portal_page_entity.md
+        - Link: modules/portal_page/domain/link_entity.md
+      - Usecase:
+        - Create Portal Page: modules/portal_page/usecase/create_portal_page_uc.md
 
 docs_dir: docs
 

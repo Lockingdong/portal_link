@@ -102,23 +102,23 @@ func (h *UserHandler) handleError(c *gin.Context, err error) {
 	case errors.Is(err, domain.ErrInvalidParams):
 		c.JSON(http.StatusBadRequest, ErrorResponse{
 			Error:   "ErrInvalidParams",
-			Message: "輸入參數不符合驗證規則",
+			Message: "Invalid request parameters",
 		})
 	case errors.Is(err, domain.ErrEmailExists):
 		c.JSON(http.StatusBadRequest, ErrorResponse{
 			Error:   "ErrEmailExists",
-			Message: "此電子郵件地址已被註冊",
+			Message: "Email already exists",
 		})
 	case errors.Is(err, domain.ErrInvalidCredentials):
 		c.JSON(http.StatusUnauthorized, ErrorResponse{
 			Error:   "ErrInvalidCredentials",
-			Message: "電子郵件或密碼錯誤",
+			Message: "Invalid email or password",
 		})
 	default:
 		// 記錄未預期的錯誤（實際應用中應使用 logger）
 		c.JSON(http.StatusInternalServerError, ErrorResponse{
 			Error:   "ErrInternal",
-			Message: "伺服器內部錯誤",
+			Message: "Internal server error",
 		})
 	}
 }
