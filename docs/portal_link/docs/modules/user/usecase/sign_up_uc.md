@@ -32,7 +32,7 @@
 3. 系統檢查電子郵件地址是否已被註冊
 4. 系統建立新的 User 實體
 5. 系統將使用者資訊存入資料庫
-6. 系統產生該 User 的 access_token
+6. 系統使用 `GenerateAccessToken` 方法產生該 User 的 access_token（詳見 [Authentication](../../../pkg/auth.md)）
 7. 系統返回 access_token
 
 ## 錯誤流程
@@ -50,9 +50,7 @@
 - 使用者姓名和電子郵件不可為空
 - 密碼暫時以明文存儲
   - **TODO:** 後續討論密碼加密方式（如 bcrypt）
-- Access token 產生方式：使用 user id + 過期時間 timestamp，再進行 base64 encode
-  - 過期時間：1 天
-  - **TODO:** 後續討論更正確的 access_token 產生方式（如 JWT）
+- Access token 產生方式：請參考 [Authentication](../../../pkg/auth.md)
 
 ## 相關實體
 

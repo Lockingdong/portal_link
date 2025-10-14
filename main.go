@@ -2,7 +2,8 @@ package main
 
 import (
 	"log"
-	"portal_link/modules/user/adapter/restapi"
+	portal_page_restapi "portal_link/modules/portal_page/adapter/restapi"
+	user_restapi "portal_link/modules/user/adapter/restapi"
 	"portal_link/pkg"
 	"portal_link/pkg/config"
 
@@ -16,7 +17,10 @@ func main() {
 	defer db.Close()
 
 	r := gin.Default()
-	if err := restapi.NewUserHandler(r, db); err != nil {
+	if err := user_restapi.NewUserHandler(r, db); err != nil {
+		log.Fatal(err)
+	}
+	if err := portal_page_restapi.NewPortalPageHandler(r, db); err != nil {
 		log.Fatal(err)
 	}
 

@@ -1,10 +1,10 @@
 package domain
 
-import "errors"
+import "github.com/cockroachdb/errors"
 
 var (
 	// ErrInvalidParams 參數錯誤
-	ErrInvalidParams = errors.New("invalid params")
+	ErrInvalidParams = errors.New("invalid parameters")
 
 	// ErrEmailExists Email 已存在於系統
 	ErrEmailExists = errors.New("email already exists")

@@ -37,7 +37,7 @@ func (r *PortalPageRepository) Create(ctx context.Context, portalPage *domain.Po
 		Title:           portalPage.Title,
 		Bio:             null.StringFrom(portalPage.Bio),
 		ProfileImageURL: null.StringFrom(portalPage.ProfileImageURL),
-		Theme:           null.StringFrom(portalPage.Theme),
+		Theme:           null.StringFrom(string(portalPage.Theme)),
 		CreatedAt:       null.TimeFrom(portalPage.CreatedAt),
 		UpdatedAt:       null.TimeFrom(portalPage.UpdatedAt),
 	}
@@ -99,7 +99,7 @@ func (r *PortalPageRepository) Update(ctx context.Context, portalPage *domain.Po
 	m.Title = portalPage.Title
 	m.Bio = null.StringFrom(portalPage.Bio)
 	m.ProfileImageURL = null.StringFrom(portalPage.ProfileImageURL)
-	m.Theme = null.StringFrom(portalPage.Theme)
+	m.Theme = null.StringFrom(string(portalPage.Theme))
 	m.UpdatedAt = null.TimeFrom(portalPage.UpdatedAt)
 
 	_, err = m.Update(ctx, tx, boil.Infer())
@@ -226,7 +226,7 @@ func (r *PortalPageRepository) toDomainPortalPage(m *models.PortalPage) *domain.
 		Title:           m.Title,
 		Bio:             m.Bio.String,
 		ProfileImageURL: m.ProfileImageURL.String,
-		Theme:           m.Theme.String,
+		Theme:           domain.Theme(m.Theme.String),
 		CreatedAt:       m.CreatedAt.Time,
 		UpdatedAt:       m.UpdatedAt.Time,
 		Links:           make([]*domain.Link, 0),

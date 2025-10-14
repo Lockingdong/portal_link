@@ -3,11 +3,10 @@ package usecase
 import (
 	"context"
 	"database/sql"
-	"encoding/base64"
 	"fmt"
 	"portal_link/modules/user/domain"
+	"portal_link/pkg"
 	"regexp"
-	"time"
 
 	"github.com/cockroachdb/errors"
 )
@@ -65,7 +64,11 @@ func (s *SignUpUC) Execute(ctx context.Context, signUpParams *SignUpParams) (*Si
 	}
 
 	// 5. 產生該 User 的 access_token
-	accessToken := generateAccessToken(user.ID)
+	UserID := fmt.Sprintf("%d", user.ID)
+	accessToken, err := pkg.GenerateAccessToken(UserID)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to generate access token")
+	}
 
 	// 6. 返回 access_token
 	return &SignUpResult{
@@ -100,13 +103,4 @@ func (s *SignUpUC) validateParams(params *SignUpParams) error {
 	}
 
 	return nil
-}
-
-// generateAccessToken 產生 access token
-// 使用 user id + 過期時間 timestamp，再進行 base64 encode
-// 過期時間：1 天
-func generateAccessToken(userID int) string {
-	expiresAt := time.Now().Add(24 * time.Hour).Unix()
-	tokenString := fmt.Sprintf("%d:%d", userID, expiresAt)
-	return base64.StdEncoding.EncodeToString([]byte(tokenString))
 }

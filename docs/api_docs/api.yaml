@@ -1,20 +1,22 @@
 openapi: 3.0.3
 info:
   title: Portal Link API
-  description: Portal Link 用戶認證與管理 API
+  description: Portal Link User Authentication and Management API
   version: 1.0.0
   contact:
     name: Portal Link Team
 
 servers:
   - url: http://localhost:8080/api/v1
-    description: 開發環境
+    description: Development environment
   - url: https://api.portallink.com/v1
-    description: 生產環境
+    description: Production environment
 
 tags:
   - name: user
-    description: 用戶相關操作
+    description: User operations
+  - name: portal-page
+    description: Portal Page operations
 
 paths:
   /user/signup:
@@ -44,7 +46,7 @@ paths:
               example:
                 access_token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
         '400':
-          description: 輸入參數驗證失敗
+          description: Invalid request parameters
           content:
             application/json:
               schema:
@@ -61,14 +63,14 @@ paths:
                     error: "ErrEmailExists"
                     message: "此電子郵件地址已被註冊"
         '500':
-          description: 伺服器內部錯誤
+          description: Internal server error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
                 error: "ErrInternal"
-                message: "伺服器內部錯誤"
+                message: "Internal server error"
 
   /user/signin:
     post:
@@ -96,7 +98,7 @@ paths:
               example:
                 access_token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
         '400':
-          description: 輸入參數驗證失敗
+          description: Invalid request parameters
           content:
             application/json:
               schema:
@@ -114,14 +116,120 @@ paths:
                 error: "ErrInvalidCredentials"
                 message: "電子郵件或密碼錯誤"
         '500':
-          description: 伺服器內部錯誤
+          description: Internal server error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
                 error: "ErrInternal"
-                message: "伺服器內部錯誤"
+                message: "Internal server error"
+
+  /portal-pages:
+    post:
+      tags:
+        - portal-page
+      summary: Create Portal Page
+      description: Create a new personal portal page
+      operationId: createPortalPage
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePortalPageRequest'
+            example:
+              slug: "john-doe"
+              title: "John's Page"
+              bio: "Welcome to my personal page!"
+              profile_image_url: "https://example.com/images/john.jpg"
+              theme: "light"
+      responses:
+        '201':
+          description: Portal Page created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatePortalPageResponse'
+              example:
+                id: 1
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                slugFormatInvalid:
+                  summary: Invalid slug format
+                  value:
+                    error: "ErrInvalidParams"
+                    message: "Slug can only contain lowercase letters, numbers, and hyphens (not at start/end)"
+                slugTooShort:
+                  summary: Slug too short
+                  value:
+                    error: "ErrInvalidParams"
+                    message: "Slug must be between 3 and 50 characters"
+                slugTooLong:
+                  summary: Slug too long
+                  value:
+                    error: "ErrInvalidParams"
+                    message: "Slug must be between 3 and 50 characters"
+                slugReserved:
+                  summary: Reserved slug
+                  value:
+                    error: "ErrInvalidParams"
+                    message: "This slug is reserved and cannot be used (e.g., admin, api, static)"
+                slugExists:
+                  summary: Slug already exists
+                  value:
+                    error: "ErrSlugExists"
+                    message: "This slug is already in use"
+                titleEmpty:
+                  summary: Empty title
+                  value:
+                    error: "ErrInvalidParams"
+                    message: "Title cannot be empty"
+                titleTooLong:
+                  summary: Title too long
+                  value:
+                    error: "ErrInvalidParams"
+                    message: "Title must not exceed 100 characters"
+                bioTooLong:
+                  summary: Bio too long
+                  value:
+                    error: "ErrInvalidParams"
+                    message: "Bio must not exceed 500 characters"
+                invalidProfileImageUrl:
+                  summary: Invalid profile image URL
+                  value:
+                    error: "ErrInvalidParams"
+                    message: "Profile image URL must be a valid URL format"
+                invalidTheme:
+                  summary: Invalid theme
+                  value:
+                    error: "ErrInvalidParams"
+                    message: "Theme must be either 'light' or 'dark'"
+        '401':
+          description: Unauthorized access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "ErrUnauthorized"
+                message: "Please sign in first"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "ErrInternal"
+                message: "Internal server error"
 
 components:
   schemas:
@@ -190,6 +298,71 @@ components:
           type: string
           description: 訪問令牌（有效期 1 天）
           example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+
+    CreatePortalPageRequest:
+      type: object
+      required:
+        - slug
+        - title
+      properties:
+        slug:
+          type: string
+          minLength: 3
+          maxLength: 50
+          pattern: '^[a-z0-9]+(-[a-z0-9]+)*$'
+          description: |
+            個人頁面的唯一標識符
+            - 長度：3-50 字元
+            - 只能包含小寫英文字母（a-z）、數字（0-9）和連字號（-）
+            - 不可以連字號開頭或結尾
+            - 不可包含連續的連字號
+            - 系統會自動將輸入轉換為小寫
+            - 不可使用系統保留字（如 admin、api、static 等）
+          example: "john-doe"
+        title:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: |
+            頁面標題
+            - 長度：1-100 字元
+            - 不可為空
+          example: "John's Page"
+        bio:
+          type: string
+          maxLength: 500
+          description: |
+            個人簡介（選填）
+            - 最多 500 字元
+            - 可為空
+          example: "Welcome to my personal page!"
+        profile_image_url:
+          type: string
+          format: uri
+          description: |
+            個人頭像圖片網址（選填）
+            - 必須為有效的 URL 格式
+            - 可為空
+          example: "https://example.com/images/john.jpg"
+        theme:
+          type: string
+          enum: [light, dark]
+          description: |
+            頁面主題（選填）
+            - 可選值：light、dark
+            - 預設值：light
+          example: "light"
+
+    CreatePortalPageResponse:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Portal Page ID
+          example: 1
 
     ErrorResponse:
       type: object

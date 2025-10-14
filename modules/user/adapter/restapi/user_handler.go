@@ -2,12 +2,13 @@ package restapi
 
 import (
 	"database/sql"
+	"errors"
 	"net/http"
 	"portal_link/modules/user/domain"
 	"portal_link/modules/user/repository"
 	"portal_link/modules/user/usecase"
+	"portal_link/pkg/http_error"
 
-	"github.com/cockroachdb/errors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -33,20 +34,13 @@ func NewUserHandler(e *gin.Engine, db *sql.DB) error {
 	return nil
 }
 
-// ErrorResponse API 錯誤響應結構
-type ErrorResponse struct {
-	Error   string `json:"error"`
-	Message string `json:"message"`
-}
-
 // SignUp 處理用戶註冊請求
-// POST /api/v1/user/signup
 func (h *UserHandler) SignUp(c *gin.Context) {
 	var req usecase.SignUpParams
 
 	// 綁定並驗證請求體
 	if err := c.ShouldBindJSON(&req); err != nil {
-		h.handleError(c, err)
+		http_error.ResponseBadRequest(c, nil)
 		return
 	}
 
@@ -56,9 +50,16 @@ func (h *UserHandler) SignUp(c *gin.Context) {
 		Email:    req.Email,
 		Password: req.Password,
 	})
-
 	if err != nil {
-		h.handleError(c, err)
+		if errors.Is(err, domain.ErrInvalidParams) || errors.Is(err, domain.ErrEmailExists) {
+			http_error.ResponseBadRequest(c, &http_error.ErrorResponse{
+				Message: err.Error(),
+			})
+			return
+		}
+		http_error.ResponseInternalServerError(c, &http_error.ErrorResponse{
+			Message: err.Error(),
+		})
 		return
 	}
 
@@ -69,13 +70,12 @@ func (h *UserHandler) SignUp(c *gin.Context) {
 }
 
 // SignIn 處理用戶登入請求
-// POST /api/v1/user/signin
 func (h *UserHandler) SignIn(c *gin.Context) {
 	var req usecase.SignInParams
 
 	// 綁定並驗證請求體
 	if err := c.ShouldBindJSON(&req); err != nil {
-		h.handleError(c, err)
+		http_error.ResponseBadRequest(c, nil)
 		return
 	}
 
@@ -86,7 +86,15 @@ func (h *UserHandler) SignIn(c *gin.Context) {
 	})
 
 	if err != nil {
-		h.handleError(c, err)
+		if errors.Is(err, domain.ErrInvalidParams) || errors.Is(err, domain.ErrInvalidCredentials) {
+			http_error.ResponseBadRequest(c, &http_error.ErrorResponse{
+				Message: err.Error(),
+			})
+			return
+		}
+		http_error.ResponseInternalServerError(c, &http_error.ErrorResponse{
+			Message: err.Error(),
+		})
 		return
 	}
 
@@ -94,31 +102,4 @@ func (h *UserHandler) SignIn(c *gin.Context) {
 	c.JSON(http.StatusOK, &usecase.SignInResult{
 		AccessToken: result.AccessToken,
 	})
-}
-
-// handleError 處理用例層錯誤並映射到 HTTP 狀態碼
-func (h *UserHandler) handleError(c *gin.Context, err error) {
-	switch {
-	case errors.Is(err, domain.ErrInvalidParams):
-		c.JSON(http.StatusBadRequest, ErrorResponse{
-			Error:   "ErrInvalidParams",
-			Message: "Invalid request parameters",
-		})
-	case errors.Is(err, domain.ErrEmailExists):
-		c.JSON(http.StatusBadRequest, ErrorResponse{
-			Error:   "ErrEmailExists",
-			Message: "Email already exists",
-		})
-	case errors.Is(err, domain.ErrInvalidCredentials):
-		c.JSON(http.StatusUnauthorized, ErrorResponse{
-			Error:   "ErrInvalidCredentials",
-			Message: "Invalid email or password",
-		})
-	default:
-		// 記錄未預期的錯誤（實際應用中應使用 logger）
-		c.JSON(http.StatusInternalServerError, ErrorResponse{
-			Error:   "ErrInternal",
-			Message: "Internal server error",
-		})
-	}
 }

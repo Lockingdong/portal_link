@@ -28,7 +28,7 @@
 2. 系統驗證輸入參數格式
 3. 系統根據電子郵件地址查詢使用者
 4. 系統驗證密碼是否正確
-5. 系統產生該 User 的 access_token
+5. 系統使用 `GenerateAccessToken` 方法產生該 User 的 access_token（詳見 [Authentication](../../../pkg/auth.md)）
 6. 系統返回 access_token
 
 ## 錯誤流程
@@ -47,9 +47,7 @@
 - 密碼暫時以明文方式比對
   - **TODO:** 後續討論密碼加密方式（如 bcrypt）
 - 登入失敗時不透露具體原因（使用者不存在 or 密碼錯誤），統一返回 `ErrInvalidCredentials` 以提高安全性
-- Access token 產生方式：使用 user id + 過期時間 timestamp，再進行 base64 encode
-  - 過期時間：1 天
-  - **TODO:** 後續討論更正確的 access_token 產生方式（如 JWT）
+- Access token 產生方式：請參考 [Authentication](../../../pkg/auth.md)
 
 ## 相關實體
 

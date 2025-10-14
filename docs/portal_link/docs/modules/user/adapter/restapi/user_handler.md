@@ -22,7 +22,7 @@
 1. 綁定並驗證 Request 為 `SignUpParams`
 2. 調用 `signUpUC.Execute()` 執行註冊邏輯 （請參考 [sign_up_uc.md](../../usecase/sign_up_uc.md)）
 
-** Request:**
+**Request:**
 ```json
 {
     "name": "用戶名稱",
@@ -44,23 +44,15 @@
 `400 Bad Request` - 參數驗證失敗
 ```json
 {
-    "error": "ErrInvalidParams",
+    "code": "ErrInvalidParams",
     "message": "Invalid request parameters"
-}
-```
-
-`400 Bad Request` - 電子郵件已存在
-```json
-{
-    "error": "ErrEmailExists",
-    "message": "Email already exists"
 }
 ```
 
 `500 Internal Server Error` - 伺服器內部錯誤
 ```json
 {
-    "error": "ErrInternal",
+    "code": "ErrInternal",
     "message": "Internal server error"
 }
 ```
@@ -97,7 +89,7 @@
 `400 Bad Request` - 參數驗證失敗
 ```json
 {
-    "error": "ErrInvalidParams",
+    "code": "ErrInvalidParams",
     "message": "Invalid request parameters"
 }
 ```
@@ -105,7 +97,7 @@
 `401 Unauthorized` - 認證失敗
 ```json
 {
-    "error": "ErrInvalidCredentials",
+    "code": "ErrInvalidCredentials",
     "message": "Invalid email or password"
 }
 ```
@@ -113,7 +105,7 @@
 `500 Internal Server Error` - 伺服器內部錯誤
 ```json
 {
-    "error": "ErrInternal",
+    "code": "ErrInternal",
     "message": "Internal server error"
 }
 ```

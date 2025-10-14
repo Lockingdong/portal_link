@@ -3,7 +3,9 @@ package usecase
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"portal_link/modules/user/domain"
+	"portal_link/pkg"
 	"regexp"
 
 	"github.com/cockroachdb/errors"
@@ -52,7 +54,11 @@ func (s *SignInUC) Execute(ctx context.Context, signInParams *SignInParams) (*Si
 	}
 
 	// 4. 產生該 User 的 access_token
-	accessToken := generateAccessToken(user.ID)
+	UserID := fmt.Sprintf("%d", user.ID)
+	accessToken, err := pkg.GenerateAccessToken(UserID)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to generate access token")
+	}
 
 	// 5. 返回 access_token
 	return &SignInResult{
