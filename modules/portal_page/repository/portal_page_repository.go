@@ -108,7 +108,9 @@ func (r *PortalPageRepository) Update(ctx context.Context, portalPage *domain.Po
 	}
 
 	// 載入現有的 Links
-	existingLinks, err := m.Links().All(ctx, tx)
+	existingLinks, err := models.Links(
+		models.LinkWhere.PortalPageID.EQ(m.ID),
+	).All(ctx, tx)
 	if err != nil {
 		return err
 	}
@@ -190,20 +192,41 @@ func (r *PortalPageRepository) Update(ctx context.Context, portalPage *domain.Po
 func (r *PortalPageRepository) FindBySlug(ctx context.Context, slug string) (*domain.PortalPage, error) {
 	m, err := models.PortalPages(
 		models.PortalPageWhere.Slug.EQ(slug),
-		qm.Load(models.PortalPageRels.Links),
 	).One(ctx, r.db)
 	if err != nil {
 		return nil, err
 	}
 
-	return r.toDomainPortalPage(m), nil
+	links, err := models.Links(
+		models.LinkWhere.PortalPageID.EQ(m.ID),
+	).All(ctx, r.db)
+	if err != nil {
+		return nil, err
+	}
+
+	domainLinks := make([]*domain.Link, 0, len(links))
+	for _, link := range links {
+		domainLinks = append(domainLinks, &domain.Link{
+			ID:           link.ID,
+			PortalPageID: link.PortalPageID,
+			Title:        link.Title,
+			URL:          link.URL,
+			Description:  link.Description.String,
+			IconURL:      link.IconURL.String,
+			DisplayOrder: link.DisplayOrder,
+			CreatedAt:    link.CreatedAt.Time,
+			UpdatedAt:    link.UpdatedAt.Time,
+		})
+	}
+
+	return r.toDomainPortalPage(m, domainLinks), nil
 }
 
-// FindByUserID 根據 UserID 查找 Portal Page
-func (r *PortalPageRepository) FindByUserID(ctx context.Context, userID int) ([]*domain.PortalPage, error) {
+// ListByUserID 根據 UserID 查找 Portal Page
+func (r *PortalPageRepository) ListByUserID(ctx context.Context, userID int) ([]*domain.PortalPage, error) {
 	ms, err := models.PortalPages(
 		models.PortalPageWhere.UserID.EQ(userID),
-		qm.Load(models.PortalPageRels.Links),
+		qm.OrderBy(models.PortalPageColumns.CreatedAt+" ASC"),
 	).All(ctx, r.db)
 	if err != nil {
 		return nil, err
@@ -211,14 +234,47 @@ func (r *PortalPageRepository) FindByUserID(ctx context.Context, userID int) ([]
 
 	portalPages := make([]*domain.PortalPage, len(ms))
 	for i, m := range ms {
-		portalPages[i] = r.toDomainPortalPage(m)
+		portalPages[i] = r.toDomainPortalPage(m, nil)
 	}
 
 	return portalPages, nil
 }
 
+// FindByID 根據 ID 查找 Portal Page with Links
+func (r *PortalPageRepository) FindByID(ctx context.Context, id int) (*domain.PortalPage, error) {
+	m, err := models.FindPortalPage(ctx, r.db, id)
+	if err != nil {
+		return nil, err
+	}
+
+	links, err := models.Links(
+		models.LinkWhere.PortalPageID.EQ(m.ID),
+	).All(ctx, r.db)
+	if err != nil {
+		return nil, err
+	}
+
+	domainLinks := make([]*domain.Link, len(links))
+	for i, link := range links {
+		domainLinks[i] = &domain.Link{
+			ID:           link.ID,
+			PortalPageID: link.PortalPageID,
+			Title:        link.Title,
+			URL:          link.URL,
+			Description:  link.Description.String,
+			IconURL:      link.IconURL.String,
+			DisplayOrder: link.DisplayOrder,
+			CreatedAt:    link.CreatedAt.Time,
+			UpdatedAt:    link.UpdatedAt.Time,
+		}
+	}
+
+	return r.toDomainPortalPage(m, domainLinks), nil
+
+}
+
 // toDomainPortalPage 將 models.PortalPage 轉換為 domain.PortalPage
-func (r *PortalPageRepository) toDomainPortalPage(m *models.PortalPage) *domain.PortalPage {
+func (r *PortalPageRepository) toDomainPortalPage(m *models.PortalPage, links []*domain.Link) *domain.PortalPage {
 	portalPage := &domain.PortalPage{
 		ID:              m.ID,
 		UserID:          m.UserID,
@@ -229,25 +285,7 @@ func (r *PortalPageRepository) toDomainPortalPage(m *models.PortalPage) *domain.
 		Theme:           domain.Theme(m.Theme.String),
 		CreatedAt:       m.CreatedAt.Time,
 		UpdatedAt:       m.UpdatedAt.Time,
-		Links:           make([]*domain.Link, 0),
-	}
-
-	// 轉換關聯的 Links
-	if m.R != nil && m.R.Links != nil {
-		for _, linkModel := range m.R.Links {
-			link := &domain.Link{
-				ID:           linkModel.ID,
-				PortalPageID: linkModel.PortalPageID,
-				Title:        linkModel.Title,
-				URL:          linkModel.URL,
-				Description:  linkModel.Description.String,
-				IconURL:      linkModel.IconURL.String,
-				DisplayOrder: linkModel.DisplayOrder,
-				CreatedAt:    linkModel.CreatedAt.Time,
-				UpdatedAt:    linkModel.UpdatedAt.Time,
-			}
-			portalPage.Links = append(portalPage.Links, link)
-		}
+		Links:           links,
 	}
 
 	return portalPage

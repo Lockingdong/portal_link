@@ -5,10 +5,15 @@
 系統在使用者成功登入或註冊後會產生 access token。目前採用簡單的實作方式，未來會進行增強。
 
 ### 目前實作
+
 - Token 格式：將使用者 ID 和過期時間 timestamp 進行 base64 編碼
 - Token 有效期：產生後 1 天內有效
+- 驗證機制：
+  - 驗證 token 格式和過期時間
+  - **檢查使用者是否存在於資料庫中**，確保已刪除的使用者無法使用舊 token
 
 ### 未來優化計畫（TODO）
+
 - 實作 JWT（JSON Web Tokens）以提供更安全和功能豐富的 token 機制
 - 新增 token 刷新機制
 - 考慮實作 token 撤銷功能
@@ -39,54 +44,62 @@ func GenerateAccessToken(userID string) (string, error)
 
 ### ValidateAccessToken
 
-驗證 access token 的有效性。
+驗證 access token 的有效性，並確認使用者是否存在於資料庫中。
 
 ```go
-func ValidateAccessToken(token string) (string, error)
+func ValidateAccessToken(ctx context.Context, token string, db *sql.DB) (string, error)
 ```
 
 **參數：**
+- `ctx`: 上下文
 - `token`: 要驗證的 access token
+- `db`: 資料庫連接，用於檢查使用者是否存在
 
 **回傳：**
-- `string`: token 對應的使用者 ID
+- `string`: token 對應的使用者 ID（字串格式）
 - `error`: 如果驗證失敗則回傳錯誤
 
 **處理流程：**
 1. 解碼 base64 token
 2. 解析出使用者 ID 和過期時間
 3. 檢查是否已過期
-4. 回傳使用者 ID
+4. **透過 SQLBoiler 的 FindUser 檢查使用者是否存在於資料庫中**
+5. 回傳使用者 ID
 
 **錯誤類型：**
 - `ErrInvalidToken`: token 格式不正確
 - `ErrExpiredToken`: token 已過期
-- `ErrTokenValidationFailed`: 驗證過程發生錯誤
+- `ErrInvalidUserID`: token 中的使用者 ID 格式無效
+- `ErrUserNotFound`: 使用者不存在（已被刪除）
 
 ### AuthMiddleware
 
 Gin 框架的身份驗證中間件，用於保護需要登入的 API 端點。
 
 ```go
-func AuthMiddleware() gin.HandlerFunc
+func AuthMiddleware(db *sql.DB) gin.HandlerFunc
 ```
+
+**參數：**
+- `db`: 資料庫連接，用於檢查使用者是否存在
 
 **功能：**
 - 從請求標頭獲取並驗證 access token
+- 透過 SQLBoiler 檢查使用者是否存在於資料庫中
 - 將驗證後的使用者 ID 存入 context
 - 處理驗證失敗的情況
 
 **使用方式：**
 ```go
 router := gin.Default()
-router.Use(AuthMiddleware()) // 全域使用
+router.Use(AuthMiddleware(db)) // 全域使用
 // 或
-router.GET("/protected", AuthMiddleware(), handleProtected) // 單一路由使用
+router.GET("/protected", AuthMiddleware(db), handleProtected) // 單一路由使用
 ```
 
 **處理流程：**
 1. 從 Authorization 標頭獲取 Bearer token
-2. 使用 ValidateAccessToken 驗證 token
+2. 使用 ValidateAccessToken 驗證 token 並檢查使用者是否存在
 3. 如果驗證成功：
 
     - 將使用者 ID 存入 gin.Context
@@ -132,4 +145,6 @@ func handleProtected(c *gin.Context) {
 - Authorization 標頭格式必須為：`Bearer <token>`
 - 未提供 token 或格式錯誤會返回 401 Unauthorized
 - token 過期或無效會返回 401 Unauthorized
+- 使用者不存在（已被刪除）會返回 401 Unauthorized
 - Context 中找不到使用者 ID 會返回 500 Internal Server Error
+- **安全性：** 系統會檢查使用者是否存在於資料庫中，已刪除的使用者無法使用舊 token

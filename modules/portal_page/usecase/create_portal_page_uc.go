@@ -73,7 +73,7 @@ func (c *CreatePortalPageUC) Execute(ctx context.Context, params *CreatePortalPa
 		Title:           params.Title,
 		Bio:             params.Bio,
 		ProfileImageURL: params.ProfileImageURL,
-		Theme:           c.getThemeOrDefault(params.Theme),
+		Theme:           getThemeOrDefault(params.Theme),
 	})
 
 	// 4. 透過 Repository 將 Portal Page 存入資料庫
@@ -90,23 +90,23 @@ func (c *CreatePortalPageUC) Execute(ctx context.Context, params *CreatePortalPa
 // validateParams 驗證輸入參數
 func (c *CreatePortalPageUC) validateParams(params *CreatePortalPageParams) error {
 	// 驗證 slug
-	if err := c.validateSlug(params.Slug); err != nil {
+	if err := validateSlug(params.Slug); err != nil {
 		return err
 	}
 
 	// 驗證 title
-	if len(params.Title) < 1 || len(params.Title) > 100 {
-		return errors.Wrap(domain.ErrInvalidParams, "title must be between 1 and 100 characters")
+	if err := validateTitle(params.Title); err != nil {
+		return err
 	}
 
 	// 驗證 bio（選填）
-	if len(params.Bio) > 500 {
-		return errors.Wrap(domain.ErrInvalidParams, "bio must not exceed 500 characters")
+	if err := validateBio(params.Bio); err != nil {
+		return err
 	}
 
 	// 驗證 profile_image_url（選填）
 	if params.ProfileImageURL != "" {
-		if _, err := url.ParseRequestURI(params.ProfileImageURL); err != nil {
+		if err := validateProfileImageURL(params.ProfileImageURL); err != nil {
 			return errors.Wrap(domain.ErrInvalidParams, "profile_image_url must be a valid URL")
 		}
 	}
@@ -123,7 +123,7 @@ func (c *CreatePortalPageUC) validateParams(params *CreatePortalPageParams) erro
 }
 
 // validateSlug 驗證 slug 格式
-func (c *CreatePortalPageUC) validateSlug(slug string) error {
+func validateSlug(slug string) error {
 	// 長度限制：3-50 字元
 	if len(slug) < 3 || len(slug) > 50 {
 		return errors.Wrap(domain.ErrInvalidParams, "slug must be between 3 and 50 characters")
@@ -145,8 +145,32 @@ func (c *CreatePortalPageUC) validateSlug(slug string) error {
 	return nil
 }
 
+// validateTitle 驗證 title 格式
+func validateTitle(title string) error {
+	if len(title) < 1 || len(title) > 100 {
+		return errors.Wrap(domain.ErrInvalidParams, "title must be between 1 and 100 characters")
+	}
+	return nil
+}
+
+// validateBio 驗證 bio 格式
+func validateBio(bio string) error {
+	if len(bio) > 500 {
+		return errors.Wrap(domain.ErrInvalidParams, "bio must not exceed 500 characters")
+	}
+	return nil
+}
+
+// validateProfileImageURL 驗證 profile_image_url 格式
+func validateProfileImageURL(profileImageURL string) error {
+	if _, err := url.ParseRequestURI(profileImageURL); err != nil {
+		return errors.Wrap(domain.ErrInvalidParams, "profile_image_url must be a valid URL")
+	}
+	return nil
+}
+
 // getThemeOrDefault 取得 theme 或返回預設值
-func (c *CreatePortalPageUC) getThemeOrDefault(theme string) domain.Theme {
+func getThemeOrDefault(theme string) domain.Theme {
 	if theme == "" {
 		return domain.GetDefaultTheme()
 	}

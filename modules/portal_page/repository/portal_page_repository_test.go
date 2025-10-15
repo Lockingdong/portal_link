@@ -30,7 +30,7 @@ func setupTestDB(t *testing.T) *sql.DB {
 // cleanupTestDB 清理測試數據
 func cleanupTestDB(t *testing.T, db *sql.DB) {
 	t.Helper()
-	// 先刪除 links (因為有外鍵約束)
+	// 先刪除 links
 	_, err := db.Exec("DELETE FROM portal_link.links")
 	if err != nil {
 		t.Logf("failed to cleanup links: %v", err)
@@ -90,7 +90,7 @@ func TestPortalPageRepository_Create(t *testing.T) {
 				assert.Equal(t, "測試用戶的頁面", portalPage.Title)
 				assert.Equal(t, "這是測試用戶的自我介紹", portalPage.Bio)
 				assert.Equal(t, "https://example.com/avatar.jpg", portalPage.ProfileImageURL)
-				assert.Equal(t, "light", portalPage.Theme)
+				assert.Equal(t, "light", string(portalPage.Theme))
 				assert.NotZero(t, portalPage.CreatedAt)
 				assert.NotZero(t, portalPage.UpdatedAt)
 				assert.Empty(t, portalPage.Links)
@@ -185,7 +185,7 @@ func TestPortalPageRepository_Create(t *testing.T) {
 				Links:     []*domain.Link{},
 			},
 			wantErr: true,
-			errMsg:  "violates foreign key constraint",
+			errMsg:  "duplicate key",
 		},
 	}
 
@@ -278,7 +278,7 @@ func TestPortalPageRepository_Update(t *testing.T) {
 				assert.Equal(t, "更新後的標題", updated.Title)
 				assert.Equal(t, "更新後的介紹", updated.Bio)
 				assert.Equal(t, "https://example.com/new.jpg", updated.ProfileImageURL)
-				assert.Equal(t, "dark", updated.Theme)
+				assert.Equal(t, "dark", string(updated.Theme))
 				assert.Len(t, updated.Links, 1)
 				assert.Equal(t, "Link 1", updated.Links[0].Title)
 			},
@@ -644,7 +644,7 @@ func TestPortalPageRepository_FindBySlug(t *testing.T) {
 				assert.Equal(t, "測試查找頁面", portalPage.Title)
 				assert.Equal(t, "這是用於測試的頁面", portalPage.Bio)
 				assert.Equal(t, "https://example.com/avatar.jpg", portalPage.ProfileImageURL)
-				assert.Equal(t, "light", portalPage.Theme)
+				assert.Equal(t, "light", string(portalPage.Theme))
 				assert.Equal(t, testUserID, portalPage.UserID)
 				assert.NotZero(t, portalPage.CreatedAt)
 				assert.NotZero(t, portalPage.UpdatedAt)
@@ -717,15 +717,6 @@ func TestPortalPageRepository_FindByUserID(t *testing.T) {
 		Theme:           "light",
 		CreatedAt:       now,
 		UpdatedAt:       now,
-		Links: []*domain.Link{
-			{
-				Title:        "GitHub",
-				URL:          "https://github.com/user1",
-				DisplayOrder: 1,
-				CreatedAt:    now,
-				UpdatedAt:    now,
-			},
-		},
 	}
 	err := repo.Create(ctx, portalPage1)
 	assert.NoError(t, err)
@@ -738,22 +729,6 @@ func TestPortalPageRepository_FindByUserID(t *testing.T) {
 		Theme:     "dark",
 		CreatedAt: now,
 		UpdatedAt: now,
-		Links: []*domain.Link{
-			{
-				Title:        "Twitter",
-				URL:          "https://twitter.com/user1",
-				DisplayOrder: 1,
-				CreatedAt:    now,
-				UpdatedAt:    now,
-			},
-			{
-				Title:        "LinkedIn",
-				URL:          "https://linkedin.com/in/user1",
-				DisplayOrder: 2,
-				CreatedAt:    now,
-				UpdatedAt:    now,
-			},
-		},
 	}
 	err = repo.Create(ctx, portalPage2)
 	assert.NoError(t, err)
@@ -765,7 +740,6 @@ func TestPortalPageRepository_FindByUserID(t *testing.T) {
 		Title:     "另一個用戶的頁面",
 		CreatedAt: now,
 		UpdatedAt: now,
-		Links:     []*domain.Link{},
 	}
 	err = repo.Create(ctx, portalPage3)
 	assert.NoError(t, err)
@@ -798,17 +772,12 @@ func TestPortalPageRepository_FindByUserID(t *testing.T) {
 				assert.Equal(t, testUserID, page1.UserID)
 				assert.Equal(t, "第一個頁面", page1.Title)
 				assert.Equal(t, "第一個測試頁面", page1.Bio)
-				assert.Equal(t, "light", page1.Theme)
-				assert.Len(t, page1.Links, 1)
-				assert.Equal(t, "GitHub", page1.Links[0].Title)
+				assert.Equal(t, "light", string(page1.Theme))
 
 				assert.NotNil(t, page2)
 				assert.Equal(t, testUserID, page2.UserID)
 				assert.Equal(t, "第二個頁面", page2.Title)
-				assert.Equal(t, "dark", page2.Theme)
-				assert.Len(t, page2.Links, 2)
-				assert.Equal(t, "Twitter", page2.Links[0].Title)
-				assert.Equal(t, "LinkedIn", page2.Links[1].Title)
+				assert.Equal(t, "dark", string(page2.Theme))
 			},
 		},
 		{
@@ -837,7 +806,7 @@ func TestPortalPageRepository_FindByUserID(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			portalPages, err := repo.FindByUserID(ctx, tt.userID)
+			portalPages, err := repo.ListByUserID(ctx, tt.userID)
 
 			if tt.wantErr {
 				assert.Error(t, err)
@@ -847,6 +816,70 @@ func TestPortalPageRepository_FindByUserID(t *testing.T) {
 
 			if tt.check != nil {
 				tt.check(t, portalPages)
+			}
+		})
+	}
+}
+
+func TestPortalPageRepository_FindByID(t *testing.T) {
+	db := setupTestDB(t)
+	t.Cleanup(func() {
+		cleanupTestDB(t, db)
+		db.Close()
+	})
+
+	repo := NewPortalPageRepository(db)
+	ctx := context.Background()
+	now := time.Now()
+	testUserID := 1
+
+	portalPage := &domain.PortalPage{
+		UserID:          testUserID,
+		Slug:            "find-by-id-test",
+		Title:           "測試查找頁面",
+		Bio:             "這是用於測試的頁面",
+		ProfileImageURL: "https://example.com/avatar.jpg",
+		Theme:           "light",
+		CreatedAt:       now,
+		UpdatedAt:       now,
+		Links:           []*domain.Link{},
+	}
+	err := repo.Create(ctx, portalPage)
+	assert.NoError(t, err)
+
+	tests := []struct {
+		name    string
+		id      int
+		wantErr bool
+		check   func(t *testing.T, portalPage *domain.PortalPage)
+	}{
+		{
+			name:    "成功根據 ID 查找 PortalPage",
+			id:      portalPage.ID,
+			wantErr: false,
+			check: func(t *testing.T, portalPage *domain.PortalPage) {
+				assert.NotNil(t, portalPage)
+				assert.Equal(t, portalPage.ID, portalPage.ID)
+				assert.Equal(t, "find-by-id-test", portalPage.Slug)
+				assert.Equal(t, "測試查找頁面", portalPage.Title)
+				assert.Equal(t, "這是用於測試的頁面", portalPage.Bio)
+				assert.Equal(t, "https://example.com/avatar.jpg", portalPage.ProfileImageURL)
+				assert.Equal(t, "light", string(portalPage.Theme))
+				assert.Equal(t, testUserID, portalPage.UserID)
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			portalPage, err := repo.FindByID(ctx, tt.id)
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+
+			if tt.check != nil {
+				tt.check(t, portalPage)
 			}
 		})
 	}

@@ -21,7 +21,7 @@ type LinkParams Link
 
 // newLink 建立新的 Link 實體（私有方法，只能透過 PortalPage 聚合根調用）
 func newLink(portalPageID int, params LinkParams) *Link {
-	now := time.Now()
+	now := time.Now().UTC()
 
 	if params.CreatedAt.IsZero() {
 		params.CreatedAt = now
@@ -42,24 +42,4 @@ func newLink(portalPageID int, params LinkParams) *Link {
 		CreatedAt:    params.CreatedAt,
 		UpdatedAt:    params.UpdatedAt,
 	}
-}
-
-// Update 更新 Link 的資訊
-func (l *Link) Update(params LinkParams) {
-	if params.Title != "" {
-		l.Title = params.Title
-	}
-	if params.URL != "" {
-		l.URL = params.URL
-	}
-	if params.Description != "" {
-		l.Description = params.Description
-	}
-	if params.IconURL != "" {
-		l.IconURL = params.IconURL
-	}
-	if params.DisplayOrder > 0 {
-		l.DisplayOrder = params.DisplayOrder
-	}
-	l.UpdatedAt = time.Now()
 }

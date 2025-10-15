@@ -26,8 +26,8 @@ COMMENT ON COLUMN portal_pages.title IS '頁面標題或顯示名稱';
 COMMENT ON COLUMN portal_pages.bio IS '使用者的個人簡介或描述';
 COMMENT ON COLUMN portal_pages.profile_image_url IS '個人頭像圖片的 URL';
 COMMENT ON COLUMN portal_pages.theme IS '頁面主題設定';
-COMMENT ON COLUMN portal_pages.created_at IS '建立時間';
-COMMENT ON COLUMN portal_pages.updated_at IS '更新時間';
+COMMENT ON COLUMN portal_pages.created_at IS '建立時間 UTC';
+COMMENT ON COLUMN portal_pages.updated_at IS '更新時間 UTC';
 
 CREATE TABLE links (
     id SERIAL PRIMARY KEY,
@@ -54,8 +54,8 @@ COMMENT ON COLUMN links.url IS '連結的目標 URL';
 COMMENT ON COLUMN links.description IS '連結的描述或說明（選填）';
 COMMENT ON COLUMN links.icon_url IS '連結的圖示 URL（選填）';
 COMMENT ON COLUMN links.display_order IS '連結在頁面上的顯示順序';
-COMMENT ON COLUMN links.created_at IS '建立時間';
-COMMENT ON COLUMN links.updated_at IS '更新時間';
+COMMENT ON COLUMN links.created_at IS '建立時間 UTC';
+COMMENT ON COLUMN links.updated_at IS '更新時間 UTC';
 -- +goose StatementEnd
 
 -- +goose Down

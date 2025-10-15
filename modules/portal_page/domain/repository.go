@@ -13,6 +13,10 @@ type PortalPageRepository interface {
 	// FindBySlug 根據 Slug 查找 Portal Page
 	FindBySlug(ctx context.Context, slug string) (*PortalPage, error)
 
-	// FindByUserID 根據 UserID 查找 Portal Page
-	FindByUserID(ctx context.Context, userID int) ([]*PortalPage, error)
+	// ListByUserID 根據 UserID 查找 Portal Page
+	// 不包含 Links
+	ListByUserID(ctx context.Context, userID int) ([]*PortalPage, error)
+
+	// FindByID 根據 ID 查找 Portal Page
+	FindByID(ctx context.Context, id int) (*PortalPage, error)
 }

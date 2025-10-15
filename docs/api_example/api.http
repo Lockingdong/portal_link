@@ -1,3 +1,5 @@
+@access_token = eyJ1c2VyX2lkIjoiMjQiLCJleHBpcmVzX2F0IjoiMjAyNS0xMC0xNlQxNToxNDoyNS4yMTA0NzdaIn0=
+
 ### Sign Up
 POST http://localhost:8080/api/v1/user/signup
 Content-Type: application/json
@@ -17,15 +19,50 @@ Content-Type: application/json
   "password": "password123"
 }
 
-### Create Portal Page
-POST http://localhost:8080/api/v1/portal-pages
+### Create My Portal Page
+POST http://localhost:8080/api/v1/me/portal-pages
 Content-Type: application/json
-Authorization: Bearer eyJ1c2VyX2lkIjoiNjYiLCJleHBpcmVzX2F0IjoiMjAyNS0xMC0xNlQwMDozMjoyMi4wODY5MjMrMDg6MDAifQ==
+Authorization: Bearer {{access_token}}
 
 {
-  "slug": "good-example",
+  "slug": "good-example-3",
   "title": "Good Example's Portal Page",
   "bio": "Good Example's Portal Page",
   "profile_image_url": "https://example.com/images/good-example.jpg",
   "theme": "dark"
+}
+
+### List My Portal Pages
+GET http://localhost:8080/api/v1/me/portal-pages
+Authorization: Bearer {{access_token}}
+
+### Update My Portal Page
+PUT http://localhost:8080/api/v1/me/portal-pages/99
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{
+  "slug": "good-example-0",
+  "title": "John's Updated Page Happy",
+  "bio": "Welcome to my updated page!!!",
+  "profile_image_url": "https://example.com/images/john-new.jpg",
+  "theme": "dark",
+  "links": [
+    {
+      "id": 19,
+      "title": "My Blog",
+      "url": "https://blog.example.com",
+      "description": "Check out my blog",
+      "icon_url": "https://example.com/icons/blog.png",
+      "display_order": 1
+    },
+    {
+      "id": 21,
+      "title": "My Blog",
+      "url": "https://blog.example.com",
+      "description": "Check out my blog",
+      "icon_url": "https://example.com/icons/blog.png",
+      "display_order": 2
+    }
+  ]
 }

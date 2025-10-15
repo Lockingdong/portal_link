@@ -1,14 +1,19 @@
 package pkg
 
 import (
+	"context"
+	"database/sql"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
+
+	"portal_link/models"
 
 	"github.com/gin-gonic/gin"
 )
@@ -23,8 +28,10 @@ const (
 
 // TODO: 擴充錯誤類型以支援更多驗證場景
 var (
-	ErrInvalidToken = errors.New("invalid token format")
-	ErrExpiredToken = errors.New("token has expired")
+	ErrInvalidToken  = errors.New("invalid token format")
+	ErrExpiredToken  = errors.New("token has expired")
+	ErrUserNotFound  = errors.New("user not found")
+	ErrInvalidUserID = errors.New("invalid user ID in token")
 )
 
 // TODO: 考慮加入額外的安全相關欄位，如 token 版本、裝置識別碼等
@@ -42,7 +49,7 @@ func GenerateAccessToken(userID string) (string, error) {
 	// 建立 token 資料
 	data := tokenData{
 		UserID:    userID,
-		ExpiresAt: time.Now().Add(TokenExpiration),
+		ExpiresAt: time.Now().UTC().Add(TokenExpiration),
 	}
 
 	// 序列化資料
@@ -56,8 +63,8 @@ func GenerateAccessToken(userID string) (string, error) {
 	return token, nil
 }
 
-// ValidateAccessToken 驗證 access token 的有效性
-func ValidateAccessToken(token string) (string, error) {
+// ValidateAccessToken 驗證 access token 的有效性，並檢查使用者是否存在
+func ValidateAccessToken(ctx context.Context, token string, db *sql.DB) (string, error) {
 	// TODO: 實作 token 黑名單機制，支援 token 撤銷功能
 	// TODO: 加入 token 使用紀錄，以便追蹤可疑活動
 	// TODO: 實作 rate limiting 機制防止暴力破解
@@ -75,15 +82,28 @@ func ValidateAccessToken(token string) (string, error) {
 	}
 
 	// 檢查是否過期
-	if time.Now().After(data.ExpiresAt) {
+	if time.Now().UTC().After(data.ExpiresAt) {
 		return "", ErrExpiredToken
+	}
+
+	// 將 userID 從字串轉換為整數
+	userID, err := strconv.Atoi(data.UserID)
+	if err != nil {
+		return "", ErrInvalidUserID
+	}
+
+	// 檢查使用者是否存在於資料庫中
+	_, err = models.FindUser(ctx, db, userID)
+	if err != nil {
+		log.Printf("User not found in database: %v", err)
+		return "", ErrUserNotFound
 	}
 
 	return data.UserID, nil
 }
 
 // AuthMiddleware Gin 框架的身份驗證中間件
-func AuthMiddleware() gin.HandlerFunc {
+func AuthMiddleware(db *sql.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// TODO: 支援多種身份驗證方式（如 API Key、OAuth 等）
 		// TODO: 加入請求來源驗證（CORS 設定）
@@ -93,10 +113,8 @@ func AuthMiddleware() gin.HandlerFunc {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-				"error": gin.H{
-					"code":    "ErrUnauthorized",
-					"message": "Invalid access token",
-				},
+				"code":    "ErrUnauthorized",
+				"message": "Invalid access token",
 			})
 			return
 		}
@@ -105,23 +123,19 @@ func AuthMiddleware() gin.HandlerFunc {
 		parts := strings.Split(authHeader, " ")
 		if len(parts) != 2 || parts[0] != "Bearer" {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-				"error": gin.H{
-					"code":    "ErrUnauthorized",
-					"message": "Invalid access token",
-				},
+				"code":    "ErrUnauthorized",
+				"message": "Invalid access token",
 			})
 			return
 		}
 
-		// 驗證 token
-		userID, err := ValidateAccessToken(parts[1])
+		// 驗證 token 並檢查使用者是否存在
+		userID, err := ValidateAccessToken(c.Request.Context(), parts[1], db)
 		if err != nil {
 			log.Println("ValidateAccessToken error:", err)
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-				"error": gin.H{
-					"code":    "ErrUnauthorized",
-					"message": "Invalid access token",
-				},
+				"code":    "ErrUnauthorized",
+				"message": "Invalid access token",
 			})
 			return
 		}

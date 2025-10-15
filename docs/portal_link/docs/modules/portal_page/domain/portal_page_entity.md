@@ -17,8 +17,8 @@ Portal Page 實體代表使用者在 Portal Link 平台上的個人化連結整�
 | bio | string | 使用者的個人簡介或描述 |
 | profile_image_url | string | 個人頭像圖片的 URL |
 | theme | string | 頁面主題設定（例如：顏色、樣式等） |
-| created_at | timestamp | 頁面建立時間 |
-| updated_at | timestamp | 頁面資料更新時間 |
+| created_at | timestamp | 頁面建立時間 UTC |
+| updated_at | timestamp | 頁面資料更新時間 UTC |
 
 ## 聚合設計
 
@@ -36,4 +36,3 @@ Portal Page 作為聚合根，負責管理以下實體：
 
 - 一個 Portal Page 的 `slug` 在系統中必須是唯一的
 - Portal Page 必須屬於一個有效的使用者（User）
-- Portal Page 內的 Links 排序（`display_order`）不能重複

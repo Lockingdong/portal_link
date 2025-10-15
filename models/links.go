@@ -38,9 +38,9 @@ type Link struct {
 	IconURL null.String `boil:"icon_url" json:"icon_url,omitempty" toml:"icon_url" yaml:"icon_url,omitempty"`
 	// 連結在頁面上的顯示順序
 	DisplayOrder int `boil:"display_order" json:"display_order" toml:"display_order" yaml:"display_order"`
-	// 建立時間
+	// 建立時間 UTC
 	CreatedAt null.Time `boil:"created_at" json:"created_at,omitempty" toml:"created_at" yaml:"created_at,omitempty"`
-	// 更新時間
+	// 更新時間 UTC
 	UpdatedAt null.Time `boil:"updated_at" json:"updated_at,omitempty" toml:"updated_at" yaml:"updated_at,omitempty"`
 
 	R *linkR `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -228,35 +228,15 @@ var LinkWhere = struct {
 
 // LinkRels is where relationship names are stored.
 var LinkRels = struct {
-	PortalPage string
-}{
-	PortalPage: "PortalPage",
-}
+}{}
 
 // linkR is where relationships are stored.
 type linkR struct {
-	PortalPage *PortalPage `boil:"PortalPage" json:"PortalPage" toml:"PortalPage" yaml:"PortalPage"`
 }
 
 // NewStruct creates a new relationship struct
 func (*linkR) NewStruct() *linkR {
 	return &linkR{}
-}
-
-func (o *Link) GetPortalPage() *PortalPage {
-	if o == nil {
-		return nil
-	}
-
-	return o.R.GetPortalPage()
-}
-
-func (r *linkR) GetPortalPage() *PortalPage {
-	if r == nil {
-		return nil
-	}
-
-	return r.PortalPage
 }
 
 // linkL is where Load methods for each relationship are stored.
@@ -573,184 +553,6 @@ func (q linkQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bool,
 	}
 
 	return count > 0, nil
-}
-
-// PortalPage pointed to by the foreign key.
-func (o *Link) PortalPage(mods ...qm.QueryMod) portalPageQuery {
-	queryMods := []qm.QueryMod{
-		qm.Where("\"id\" = ?", o.PortalPageID),
-	}
-
-	queryMods = append(queryMods, mods...)
-
-	return PortalPages(queryMods...)
-}
-
-// LoadPortalPage allows an eager lookup of values, cached into the
-// loaded structs of the objects. This is for an N-1 relationship.
-func (linkL) LoadPortalPage(ctx context.Context, e boil.ContextExecutor, singular bool, maybeLink interface{}, mods queries.Applicator) error {
-	var slice []*Link
-	var object *Link
-
-	if singular {
-		var ok bool
-		object, ok = maybeLink.(*Link)
-		if !ok {
-			object = new(Link)
-			ok = queries.SetFromEmbeddedStruct(&object, &maybeLink)
-			if !ok {
-				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeLink))
-			}
-		}
-	} else {
-		s, ok := maybeLink.(*[]*Link)
-		if ok {
-			slice = *s
-		} else {
-			ok = queries.SetFromEmbeddedStruct(&slice, maybeLink)
-			if !ok {
-				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeLink))
-			}
-		}
-	}
-
-	args := make(map[interface{}]struct{})
-	if singular {
-		if object.R == nil {
-			object.R = &linkR{}
-		}
-		args[object.PortalPageID] = struct{}{}
-
-	} else {
-		for _, obj := range slice {
-			if obj.R == nil {
-				obj.R = &linkR{}
-			}
-
-			args[obj.PortalPageID] = struct{}{}
-
-		}
-	}
-
-	if len(args) == 0 {
-		return nil
-	}
-
-	argsSlice := make([]interface{}, len(args))
-	i := 0
-	for arg := range args {
-		argsSlice[i] = arg
-		i++
-	}
-
-	query := NewQuery(
-		qm.From(`portal_link.portal_pages`),
-		qm.WhereIn(`portal_link.portal_pages.id in ?`, argsSlice...),
-	)
-	if mods != nil {
-		mods.Apply(query)
-	}
-
-	results, err := query.QueryContext(ctx, e)
-	if err != nil {
-		return errors.Wrap(err, "failed to eager load PortalPage")
-	}
-
-	var resultSlice []*PortalPage
-	if err = queries.Bind(results, &resultSlice); err != nil {
-		return errors.Wrap(err, "failed to bind eager loaded slice PortalPage")
-	}
-
-	if err = results.Close(); err != nil {
-		return errors.Wrap(err, "failed to close results of eager load for portal_pages")
-	}
-	if err = results.Err(); err != nil {
-		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for portal_pages")
-	}
-
-	if len(portalPageAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
-	if len(resultSlice) == 0 {
-		return nil
-	}
-
-	if singular {
-		foreign := resultSlice[0]
-		object.R.PortalPage = foreign
-		if foreign.R == nil {
-			foreign.R = &portalPageR{}
-		}
-		foreign.R.Links = append(foreign.R.Links, object)
-		return nil
-	}
-
-	for _, local := range slice {
-		for _, foreign := range resultSlice {
-			if local.PortalPageID == foreign.ID {
-				local.R.PortalPage = foreign
-				if foreign.R == nil {
-					foreign.R = &portalPageR{}
-				}
-				foreign.R.Links = append(foreign.R.Links, local)
-				break
-			}
-		}
-	}
-
-	return nil
-}
-
-// SetPortalPage of the link to the related item.
-// Sets o.R.PortalPage to related.
-// Adds o to related.R.Links.
-func (o *Link) SetPortalPage(ctx context.Context, exec boil.ContextExecutor, insert bool, related *PortalPage) error {
-	var err error
-	if insert {
-		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
-			return errors.Wrap(err, "failed to insert into foreign table")
-		}
-	}
-
-	updateQuery := fmt.Sprintf(
-		"UPDATE \"portal_link\".\"links\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"portal_page_id"}),
-		strmangle.WhereClause("\"", "\"", 2, linkPrimaryKeyColumns),
-	)
-	values := []interface{}{related.ID, o.ID}
-
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, updateQuery)
-		fmt.Fprintln(writer, values)
-	}
-	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	o.PortalPageID = related.ID
-	if o.R == nil {
-		o.R = &linkR{
-			PortalPage: related,
-		}
-	} else {
-		o.R.PortalPage = related
-	}
-
-	if related.R == nil {
-		related.R = &portalPageR{
-			Links: LinkSlice{o},
-		}
-	} else {
-		related.R.Links = append(related.R.Links, o)
-	}
-
-	return nil
 }
 
 // Links retrieves all the records using an executor.

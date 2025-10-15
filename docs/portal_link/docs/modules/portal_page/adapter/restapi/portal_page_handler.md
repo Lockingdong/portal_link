@@ -26,7 +26,7 @@
 **路由設定:**
 
 ```go
-router.POST("/api/v1/portal-pages", pkg.AuthMiddleware(), handler.CreatePortalPage)
+router.POST("/api/v1/portal-pages", pkg.AuthMiddleware(db), handler.CreatePortalPage)
 ```
 
 **處理流程:**

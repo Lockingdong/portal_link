@@ -16,7 +16,7 @@ type User struct {
 
 // NewUser 建立新的 User 實體
 func NewUser(params UserParams) (*User, error) {
-	now := time.Now()
+	now := time.Now().UTC()
 
 	if params.CreatedAt.IsZero() {
 		params.CreatedAt = now

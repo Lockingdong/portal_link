@@ -3,8 +3,8 @@ Table users {
   name varchar(255) [not null, note: "使用者的全名"]
   email varchar(255) [not null, unique, note: '使用者的電子郵件地址，必須是唯一的']
   password varchar(255) [not null, note: "使用者的密碼"]
-  created_at timestamp [default: `now()`, note: "建立時間"]
-  updated_at timestamp [default: `now()`, note: "更新時間"]
+  created_at timestamp [default: `now()`, note: "建立時間 UTC"]
+  updated_at timestamp [default: `now()`, note: "更新時間 UTC"]
   
   indexes {
     email [unique, name: "idx_users_email"]
@@ -20,8 +20,8 @@ Table portal_pages {
   bio text [note: "使用者的個人簡介或描述"]
   profile_image_url varchar(500) [note: "個人頭像圖片的 URL"]
   theme varchar(100) [note: "頁面主題設定"]
-  created_at timestamp [default: `now()`, note: "建立時間"]
-  updated_at timestamp [default: `now()`, note: "更新時間"]
+  created_at timestamp [default: `now()`, note: "建立時間 UTC"]
+  updated_at timestamp [default: `now()`, note: "更新時間 UTC"]
   
   indexes {
     user_id [name: "idx_portal_pages_user_id"]
@@ -40,8 +40,8 @@ Table links {
   description text [note: "連結的描述或說明（選填）"]
   icon_url varchar(500) [note: "連結的圖示 URL（選填）"]
   display_order integer [not null, note: "連結在頁面上的顯示順序"]
-  created_at timestamp [default: `now()`, note: "建立時間"]
-  updated_at timestamp [default: `now()`, note: "更新時間"]
+  created_at timestamp [default: `now()`, note: "建立時間 UTC"]
+  updated_at timestamp [default: `now()`, note: "更新時間 UTC"]
   
   indexes {
     portal_page_id [name: "idx_links_portal_page_id"]

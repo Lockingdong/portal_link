@@ -10,6 +10,8 @@ const (
 	ErrInternal = "ErrInternal"
 
 	ErrInvalidParams = "ErrInvalidParams"
+
+	ErrForbidden = "ErrForbidden"
 )
 
 type ErrorResponse struct {
@@ -50,6 +52,25 @@ func ResponseBadRequest(c *gin.Context, errorResponse *ErrorResponse) {
 	}
 
 	c.JSON(http.StatusBadRequest, &ErrorResponse{
+		Code:    code,
+		Message: message,
+	})
+}
+
+// ResponseForbidden 回應 Forbidden
+func ResponseForbidden(c *gin.Context, errorResponse *ErrorResponse) {
+	code := ErrForbidden
+	message := "Access forbidden"
+	if errorResponse != nil {
+		if errorResponse.Code != "" {
+			code = errorResponse.Code
+		}
+		if errorResponse.Message != "" {
+			message = errorResponse.Message
+		}
+	}
+
+	c.JSON(http.StatusForbidden, &ErrorResponse{
 		Code:    code,
 		Message: message,
 	})

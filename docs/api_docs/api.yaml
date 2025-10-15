@@ -125,7 +125,218 @@ paths:
                 error: "ErrInternal"
                 message: "Internal server error"
 
-  /portal-pages:
+  /me/portal-pages/{id}:
+    put:
+      tags:
+        - portal-page
+      summary: Update Portal Page
+      description: Update an existing portal page and its links
+      operationId: updatePortalPage
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Portal Page ID
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePortalPageRequest'
+            example:
+              slug: "john-doe-updated"
+              title: "John's Updated Page"
+              bio: "Welcome to my updated page!"
+              profile_image_url: "https://example.com/images/john-new.jpg"
+              theme: "dark"
+              links: [
+                {
+                  "id": 1,
+                  "title": "My Blog",
+                  "url": "https://blog.example.com",
+                  "description": "Check out my blog",
+                  "icon_url": "https://example.com/icons/blog.png",
+                  "display_order": 1
+                },
+                {
+                  "title": "New Link",
+                  "url": "https://new.example.com",
+                  "description": "My new link",
+                  "display_order": 2
+                }
+              ]
+      responses:
+        '200':
+          description: Portal Page updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdatePortalPageResponse'
+              example:
+                id: 1
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                slugFormatInvalid:
+                  summary: Invalid slug format
+                  value:
+                    error: "ErrInvalidParams"
+                    message: "Slug can only contain lowercase letters, numbers, and hyphens (not at start/end)"
+                slugExists:
+                  summary: Slug already exists
+                  value:
+                    error: "ErrInvalidParams"
+                    message: "This slug is already in use"
+                titleTooLong:
+                  summary: Title too long
+                  value:
+                    error: "ErrInvalidParams"
+                    message: "Title must not exceed 100 characters"
+                bioTooLong:
+                  summary: Bio too long
+                  value:
+                    error: "ErrInvalidParams"
+                    message: "Bio must not exceed 500 characters"
+                invalidProfileImageUrl:
+                  summary: Invalid profile image URL
+                  value:
+                    error: "ErrInvalidParams"
+                    message: "Profile image URL must be a valid URL format"
+                invalidTheme:
+                  summary: Invalid theme
+                  value:
+                    error: "ErrInvalidParams"
+                    message: "Theme must be either 'light' or 'dark'"
+                linkTitleEmpty:
+                  summary: Link title empty
+                  value:
+                    error: "ErrInvalidParams"
+                    message: "Link title cannot be empty"
+                linkUrlInvalid:
+                  summary: Invalid link URL
+                  value:
+                    error: "ErrInvalidParams"
+                    message: "Link URL must be a valid URL format"
+                linkDescriptionTooLong:
+                  summary: Link description too long
+                  value:
+                    error: "ErrInvalidParams"
+                    message: "Link description must not exceed 500 characters"
+                linkIconUrlInvalid:
+                  summary: Invalid link icon URL
+                  value:
+                    error: "ErrInvalidParams"
+                    message: "Link icon URL must be a valid URL format"
+                linkDisplayOrderInvalid:
+                  summary: Invalid display order
+                  value:
+                    error: "ErrInvalidParams"
+                    message: "Link display order must be a positive integer"
+                linkIdNotFound:
+                  summary: Link ID not found
+                  value:
+                    error: "ErrInvalidParams"
+                    message: "Link ID does not exist or does not belong to this page"
+        '401':
+          description: Unauthorized access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "ErrUnauthorized"
+                message: "Invalid access token"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "ErrForbidden"
+                message: "You do not have permission to update this page"
+        '404':
+          description: Portal Page not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "ErrPortalPageNotFound"
+                message: "Portal Page not found"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "ErrInternal"
+                message: "Internal server error"
+
+  /me/portal-pages:
+    get:
+      tags:
+        - portal-page
+      summary: List Portal Pages
+      description: Get all portal pages created by the authenticated user
+      operationId: listPortalPages
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Portal Pages list retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListPortalPagesResponse'
+              examples:
+                withPages:
+                  summary: User has portal pages
+                  value:
+                    portal_pages: [
+                      {
+                        "id": 1,
+                        "slug": "john-doe",
+                        "title": "John's Page"
+                      },
+                      {
+                        "id": 2,
+                        "slug": "my-links",
+                        "title": "My Links"
+                      }
+                    ]
+                emptyList:
+                  summary: User has no portal pages
+                  value:
+                    portal_pages: []
+        '401':
+          description: Unauthorized access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "ErrUnauthorized"
+                message: "Invalid access token"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "ErrInternal"
+                message: "Internal server error"
     post:
       tags:
         - portal-page
@@ -185,7 +396,7 @@ paths:
                 slugExists:
                   summary: Slug already exists
                   value:
-                    error: "ErrSlugExists"
+                    error: "ErrInvalidParams"
                     message: "This slug is already in use"
                 titleEmpty:
                   summary: Empty title
@@ -220,7 +431,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
                 error: "ErrUnauthorized"
-                message: "Please sign in first"
+                message: "Invalid access token"
         '500':
           description: Internal server error
           content:
@@ -363,6 +574,161 @@ components:
           format: int64
           description: Portal Page ID
           example: 1
+
+    UpdatePortalPageRequest:
+      type: object
+      required:
+        - links
+      properties:
+        slug:
+          type: string
+          minLength: 3
+          maxLength: 50
+          pattern: '^[a-z0-9]+(-[a-z0-9]+)*$'
+          description: |
+            個人頁面的唯一標識符（選填）
+            - 長度：3-50 字元
+            - 只能包含小寫英文字母（a-z）、數字（0-9）和連字號（-）
+            - 不可以連字號開頭或結尾
+            - 不可包含連續的連字號
+            - 系統會自動將輸入轉換為小寫
+            - 不可使用系統保留字（如 admin、api、static 等）
+          example: "john-doe-updated"
+        title:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: |
+            頁面標題（選填）
+            - 長度：1-100 字元
+            - 若更新則不可為空
+          example: "John's Updated Page"
+        bio:
+          type: string
+          maxLength: 500
+          description: |
+            個人簡介（選填）
+            - 最多 500 字元
+            - 可為空
+          example: "Welcome to my updated page!"
+        profile_image_url:
+          type: string
+          format: uri
+          description: |
+            個人頭像圖片網址（選填）
+            - 必須為有效的 URL 格式
+            - 可為空
+          example: "https://example.com/images/john-new.jpg"
+        theme:
+          type: string
+          enum: [light, dark]
+          description: |
+            頁面主題（選填）
+            - 可選值：light、dark
+          example: "dark"
+        links:
+          type: array
+          description: 頁面中的連結清單（必填）
+          items:
+            $ref: '#/components/schemas/LinkRequest'
+
+    LinkRequest:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: |
+            Link ID（選填）
+            - 若提供則為更新現有連結
+            - 若不提供則為新增連結
+          example: 1
+        title:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: |
+            連結標題（必填）
+            - 長度：1-100 字元
+            - 不可為空
+          example: "My Blog"
+        url:
+          type: string
+          format: uri
+          description: |
+            連結網址（必填）
+            - 必須為有效的 URL 格式
+          example: "https://blog.example.com"
+        description:
+          type: string
+          maxLength: 500
+          description: |
+            連結描述（選填）
+            - 最多 500 字元
+            - 可為空
+          example: "Check out my blog"
+        icon_url:
+          type: string
+          format: uri
+          description: |
+            連結圖示 URL（選填）
+            - 必須為有效的 URL 格式
+            - 可為空
+          example: "https://example.com/icons/blog.png"
+        display_order:
+          type: integer
+          minimum: 1
+          description: |
+            顯示順序（必填）
+            - 必須為正整數
+          example: 1
+      required:
+        - title
+        - url
+        - display_order
+
+    UpdatePortalPageResponse:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Portal Page ID
+          example: 1
+
+    ListPortalPagesResponse:
+      type: object
+      required:
+        - portal_pages
+      properties:
+        portal_pages:
+          type: array
+          description: 使用者建立的所有 Portal Pages（按建立時間升冪排序）
+          items:
+            $ref: '#/components/schemas/PortalPageSummary'
+
+    PortalPageSummary:
+      type: object
+      required:
+        - id
+        - slug
+        - title
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Portal Page ID
+          example: 1
+        slug:
+          type: string
+          description: 個人頁面的唯一標識符
+          example: "john-doe"
+        title:
+          type: string
+          description: 頁面標題
+          example: "John's Page"
 
     ErrorResponse:
       type: object

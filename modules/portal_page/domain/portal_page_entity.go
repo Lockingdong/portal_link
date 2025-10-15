@@ -2,8 +2,6 @@ package domain
 
 import (
 	"time"
-
-	"github.com/cockroachdb/errors"
 )
 
 type PortalPageParams PortalPage
@@ -25,7 +23,7 @@ type PortalPage struct {
 
 // NewPortalPage 建立新的 PortalPage 實體
 func NewPortalPage(params PortalPageParams) *PortalPage {
-	now := time.Now()
+	now := time.Now().UTC()
 
 	if params.CreatedAt.IsZero() {
 		params.CreatedAt = now
@@ -59,31 +57,5 @@ func NewPortalPage(params PortalPageParams) *PortalPage {
 func (p *PortalPage) AddLink(params LinkParams) {
 	link := newLink(p.ID, params)
 	p.Links = append(p.Links, link)
-	p.UpdatedAt = time.Now()
-}
-
-// RemoveLink 從 PortalPage 移除 Link（聚合根方法）
-func (p *PortalPage) RemoveLink(linkID int) error {
-	for i, link := range p.Links {
-		if link.ID == linkID {
-			// 移除 Link
-			p.Links = append(p.Links[:i], p.Links[i+1:]...)
-			p.UpdatedAt = time.Now()
-			return nil
-		}
-	}
-	return errors.Wrapf(ErrLinkNotFound, "link ID: %d", linkID)
-}
-
-// UpdateLink 更新 PortalPage 中的 Link（聚合根方法）
-func (p *PortalPage) UpdateLink(linkID int, params LinkParams) error {
-	for _, link := range p.Links {
-		if link.ID == linkID {
-			link.Update(params)
-			p.UpdatedAt = time.Now()
-			return nil
-		}
-	}
-
-	return errors.Wrapf(ErrLinkNotFound, "link ID: %d", linkID)
+	p.UpdatedAt = time.Now().UTC()
 }

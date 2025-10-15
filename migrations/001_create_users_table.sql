@@ -19,8 +19,8 @@ COMMENT ON COLUMN users.id IS '使用者的唯一標識符';
 COMMENT ON COLUMN users.name IS '使用者的全名';
 COMMENT ON COLUMN users.email IS '使用者的電子郵件地址，必須是唯一的';
 COMMENT ON COLUMN users.password IS '使用者的密碼';
-COMMENT ON COLUMN users.created_at IS '建立時間';
-COMMENT ON COLUMN users.updated_at IS '更新時間';
+COMMENT ON COLUMN users.created_at IS '建立時間 UTC';
+COMMENT ON COLUMN users.updated_at IS '更新時間 UTC';
 -- +goose StatementEnd
 
 -- +goose Down

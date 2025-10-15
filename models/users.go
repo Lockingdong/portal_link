@@ -32,9 +32,9 @@ type User struct {
 	Email string `boil:"email" json:"email" toml:"email" yaml:"email"`
 	// 使用者的密碼
 	Password string `boil:"password" json:"password" toml:"password" yaml:"password"`
-	// 建立時間
+	// 建立時間 UTC
 	CreatedAt null.Time `boil:"created_at" json:"created_at,omitempty" toml:"created_at" yaml:"created_at,omitempty"`
-	// 更新時間
+	// 更新時間 UTC
 	UpdatedAt null.Time `boil:"updated_at" json:"updated_at,omitempty" toml:"updated_at" yaml:"updated_at,omitempty"`
 
 	R *userR `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -93,35 +93,15 @@ var UserWhere = struct {
 
 // UserRels is where relationship names are stored.
 var UserRels = struct {
-	PortalPages string
-}{
-	PortalPages: "PortalPages",
-}
+}{}
 
 // userR is where relationships are stored.
 type userR struct {
-	PortalPages PortalPageSlice `boil:"PortalPages" json:"PortalPages" toml:"PortalPages" yaml:"PortalPages"`
 }
 
 // NewStruct creates a new relationship struct
 func (*userR) NewStruct() *userR {
 	return &userR{}
-}
-
-func (o *User) GetPortalPages() PortalPageSlice {
-	if o == nil {
-		return nil
-	}
-
-	return o.R.GetPortalPages()
-}
-
-func (r *userR) GetPortalPages() PortalPageSlice {
-	if r == nil {
-		return nil
-	}
-
-	return r.PortalPages
 }
 
 // userL is where Load methods for each relationship are stored.
@@ -438,186 +418,6 @@ func (q userQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bool,
 	}
 
 	return count > 0, nil
-}
-
-// PortalPages retrieves all the portal_page's PortalPages with an executor.
-func (o *User) PortalPages(mods ...qm.QueryMod) portalPageQuery {
-	var queryMods []qm.QueryMod
-	if len(mods) != 0 {
-		queryMods = append(queryMods, mods...)
-	}
-
-	queryMods = append(queryMods,
-		qm.Where("\"portal_link\".\"portal_pages\".\"user_id\"=?", o.ID),
-	)
-
-	return PortalPages(queryMods...)
-}
-
-// LoadPortalPages allows an eager lookup of values, cached into the
-// loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (userL) LoadPortalPages(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
-	var slice []*User
-	var object *User
-
-	if singular {
-		var ok bool
-		object, ok = maybeUser.(*User)
-		if !ok {
-			object = new(User)
-			ok = queries.SetFromEmbeddedStruct(&object, &maybeUser)
-			if !ok {
-				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeUser))
-			}
-		}
-	} else {
-		s, ok := maybeUser.(*[]*User)
-		if ok {
-			slice = *s
-		} else {
-			ok = queries.SetFromEmbeddedStruct(&slice, maybeUser)
-			if !ok {
-				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeUser))
-			}
-		}
-	}
-
-	args := make(map[interface{}]struct{})
-	if singular {
-		if object.R == nil {
-			object.R = &userR{}
-		}
-		args[object.ID] = struct{}{}
-	} else {
-		for _, obj := range slice {
-			if obj.R == nil {
-				obj.R = &userR{}
-			}
-			args[obj.ID] = struct{}{}
-		}
-	}
-
-	if len(args) == 0 {
-		return nil
-	}
-
-	argsSlice := make([]interface{}, len(args))
-	i := 0
-	for arg := range args {
-		argsSlice[i] = arg
-		i++
-	}
-
-	query := NewQuery(
-		qm.From(`portal_link.portal_pages`),
-		qm.WhereIn(`portal_link.portal_pages.user_id in ?`, argsSlice...),
-	)
-	if mods != nil {
-		mods.Apply(query)
-	}
-
-	results, err := query.QueryContext(ctx, e)
-	if err != nil {
-		return errors.Wrap(err, "failed to eager load portal_pages")
-	}
-
-	var resultSlice []*PortalPage
-	if err = queries.Bind(results, &resultSlice); err != nil {
-		return errors.Wrap(err, "failed to bind eager loaded slice portal_pages")
-	}
-
-	if err = results.Close(); err != nil {
-		return errors.Wrap(err, "failed to close results in eager load on portal_pages")
-	}
-	if err = results.Err(); err != nil {
-		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for portal_pages")
-	}
-
-	if len(portalPageAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-	if singular {
-		object.R.PortalPages = resultSlice
-		for _, foreign := range resultSlice {
-			if foreign.R == nil {
-				foreign.R = &portalPageR{}
-			}
-			foreign.R.User = object
-		}
-		return nil
-	}
-
-	for _, foreign := range resultSlice {
-		for _, local := range slice {
-			if local.ID == foreign.UserID {
-				local.R.PortalPages = append(local.R.PortalPages, foreign)
-				if foreign.R == nil {
-					foreign.R = &portalPageR{}
-				}
-				foreign.R.User = local
-				break
-			}
-		}
-	}
-
-	return nil
-}
-
-// AddPortalPages adds the given related objects to the existing relationships
-// of the user, optionally inserting them as new records.
-// Appends related to o.R.PortalPages.
-// Sets related.R.User appropriately.
-func (o *User) AddPortalPages(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*PortalPage) error {
-	var err error
-	for _, rel := range related {
-		if insert {
-			rel.UserID = o.ID
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
-				return errors.Wrap(err, "failed to insert into foreign table")
-			}
-		} else {
-			updateQuery := fmt.Sprintf(
-				"UPDATE \"portal_link\".\"portal_pages\" SET %s WHERE %s",
-				strmangle.SetParamNames("\"", "\"", 1, []string{"user_id"}),
-				strmangle.WhereClause("\"", "\"", 2, portalPagePrimaryKeyColumns),
-			)
-			values := []interface{}{o.ID, rel.ID}
-
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
-			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
-				return errors.Wrap(err, "failed to update foreign table")
-			}
-
-			rel.UserID = o.ID
-		}
-	}
-
-	if o.R == nil {
-		o.R = &userR{
-			PortalPages: related,
-		}
-	} else {
-		o.R.PortalPages = append(o.R.PortalPages, related...)
-	}
-
-	for _, rel := range related {
-		if rel.R == nil {
-			rel.R = &portalPageR{
-				User: o,
-			}
-		} else {
-			rel.R.User = o
-		}
-	}
-	return nil
 }
 
 // Users retrieves all the records using an executor.

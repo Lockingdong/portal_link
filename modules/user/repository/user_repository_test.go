@@ -30,9 +30,20 @@ func setupTestDB(t *testing.T) *sql.DB {
 // cleanupTestDB 清理測試數據
 func cleanupTestDB(t *testing.T, db *sql.DB) {
 	t.Helper()
-	_, err := db.Exec("DELETE FROM portal_link.users")
+	// 先刪除 links
+	_, err := db.Exec("DELETE FROM portal_link.links")
 	if err != nil {
-		t.Logf("failed to cleanup test data: %v", err)
+		t.Logf("failed to cleanup links: %v", err)
+	}
+	// 再刪除 portal_pages
+	_, err = db.Exec("DELETE FROM portal_link.portal_pages")
+	if err != nil {
+		t.Logf("failed to cleanup portal_pages: %v", err)
+	}
+	// 清理 users
+	_, err = db.Exec("DELETE FROM portal_link.users")
+	if err != nil {
+		t.Logf("failed to cleanup users: %v", err)
 	}
 }
 

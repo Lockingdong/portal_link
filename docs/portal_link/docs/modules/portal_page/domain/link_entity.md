@@ -15,8 +15,8 @@ Link 實體代表使用者在 Portal Page 中展示的個別連結項目，包�
 | description | string | 連結的描述或說明（選填） |
 | icon_url | string | 連結的圖示 URL（選填） |
 | display_order | int | 連結在頁面上的顯示順序 |
-| created_at | timestamp | 連結建立時間 |
-| updated_at | timestamp | 連結資料更新時間 |
+| created_at | timestamp | 連結建立時間 UTC |
+| updated_at | timestamp | 連結資料更新時間 UTC |
 
 ## 業務規則
 
