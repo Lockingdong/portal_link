@@ -1,0 +1,28 @@
+version: "3"
+
+tasks:
+  default:
+    desc: "List available tasks"
+    cmds:
+      - task --list
+  # migrate database
+  migrate-up:
+    desc: "Run database migrations"
+    cmds:
+      - goose -dir migrations postgres "host=localhost port=5432 user=postgres password=postgres dbname=portal_link sslmode=disable search_path=portal_link" up
+  migrate-down:
+    desc: "Rollback database migrations"
+    cmds:
+      - goose -dir migrations postgres "host=localhost port=5432 user=postgres password=postgres dbname=portal_link sslmode=disable search_path=portal_link" down
+  
+  # generate sqlboiler models
+  generate-models:
+    desc: "Generate sqlboiler models"
+    cmds:
+      - sqlboiler psql
+
+  # run mkdocs
+  mkdocs-serve:
+    desc: "Run mkdocs server"
+    cmds:
+      - cd docs/portal_link && mkdocs serve

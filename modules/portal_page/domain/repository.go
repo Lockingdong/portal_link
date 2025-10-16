@@ -11,6 +11,7 @@ type PortalPageRepository interface {
 	Update(ctx context.Context, portalPage *PortalPage) error
 
 	// FindBySlug 根據 Slug 查找 Portal Page
+	// 依照 display_order 升冪排序
 	FindBySlug(ctx context.Context, slug string) (*PortalPage, error)
 
 	// ListByUserID 根據 UserID 查找 Portal Page
@@ -18,5 +19,6 @@ type PortalPageRepository interface {
 	ListByUserID(ctx context.Context, userID int) ([]*PortalPage, error)
 
 	// FindByID 根據 ID 查找 Portal Page
+	// 依照 display_order 升冪排序
 	FindByID(ctx context.Context, id int) (*PortalPage, error)
 }

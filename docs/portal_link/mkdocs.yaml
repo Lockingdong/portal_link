@@ -4,8 +4,6 @@ nav:
   - Home: index.md
   - Modules:
     - User:
-      - Adapter:
-        - RestAPI: modules/user/adapter/restapi/user_handler.md
       - Domain:
         - Error: modules/user/domain/error.md
         - User: modules/user/domain/user_entity.md
@@ -13,8 +11,6 @@ nav:
         - Sign Up: modules/user/usecase/sign_up_uc.md
         - Sign In: modules/user/usecase/sign_in_uc.md
     - Portal Page:
-      - Adapter:
-        - RestAPI: modules/portal_page/adapter/restapi/portal_page_handler.md
       - Domain:
         - Error: modules/portal_page/domain/error.md
         - Enum: modules/portal_page/domain/enum.md

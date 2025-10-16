@@ -1,4 +1,4 @@
-@access_token = eyJ1c2VyX2lkIjoiMjQiLCJleHBpcmVzX2F0IjoiMjAyNS0xMC0xNlQxNToxNDoyNS4yMTA0NzdaIn0=
+@access_token = eyJ1c2VyX2lkIjoiMSIsImV4cGlyZXNfYXQiOiIyMDI1LTEwLTE3VDE3OjIwOjQ0LjMwMzQyOVoifQ==
 
 ### Sign Up
 POST http://localhost:8080/api/v1/user/signup
@@ -36,8 +36,12 @@ Authorization: Bearer {{access_token}}
 GET http://localhost:8080/api/v1/me/portal-pages
 Authorization: Bearer {{access_token}}
 
+### Find My Portal Page By ID
+GET http://localhost:8080/api/v1/me/portal-pages/1
+Authorization: Bearer {{access_token}}
+
 ### Update My Portal Page
-PUT http://localhost:8080/api/v1/me/portal-pages/99
+PUT http://localhost:8080/api/v1/me/portal-pages/1
 Content-Type: application/json
 Authorization: Bearer {{access_token}}
 
@@ -49,7 +53,6 @@ Authorization: Bearer {{access_token}}
   "theme": "dark",
   "links": [
     {
-      "id": 19,
       "title": "My Blog",
       "url": "https://blog.example.com",
       "description": "Check out my blog",
@@ -57,7 +60,6 @@ Authorization: Bearer {{access_token}}
       "display_order": 1
     },
     {
-      "id": 21,
       "title": "My Blog",
       "url": "https://blog.example.com",
       "description": "Check out my blog",

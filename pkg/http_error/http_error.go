@@ -12,6 +12,8 @@ const (
 	ErrInvalidParams = "ErrInvalidParams"
 
 	ErrForbidden = "ErrForbidden"
+
+	ErrNotFound = "ErrNotFound"
 )
 
 type ErrorResponse struct {
@@ -60,7 +62,7 @@ func ResponseBadRequest(c *gin.Context, errorResponse *ErrorResponse) {
 // ResponseForbidden 回應 Forbidden
 func ResponseForbidden(c *gin.Context, errorResponse *ErrorResponse) {
 	code := ErrForbidden
-	message := "Access forbidden"
+	message := "You do not have permission"
 	if errorResponse != nil {
 		if errorResponse.Code != "" {
 			code = errorResponse.Code
@@ -71,6 +73,22 @@ func ResponseForbidden(c *gin.Context, errorResponse *ErrorResponse) {
 	}
 
 	c.JSON(http.StatusForbidden, &ErrorResponse{
+		Code:    code,
+		Message: message,
+	})
+}
+
+// ResponseNotFound 回應 Not Found
+func ResponseNotFound(c *gin.Context, errorResponse *ErrorResponse) {
+	code := ErrNotFound
+	message := "Resource not found"
+	if errorResponse != nil {
+		if errorResponse.Code != "" {
+			code = errorResponse.Code
+		}
+	}
+
+	c.JSON(http.StatusNotFound, &ErrorResponse{
 		Code:    code,
 		Message: message,
 	})

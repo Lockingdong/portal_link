@@ -199,6 +199,7 @@ func (r *PortalPageRepository) FindBySlug(ctx context.Context, slug string) (*do
 
 	links, err := models.Links(
 		models.LinkWhere.PortalPageID.EQ(m.ID),
+		qm.OrderBy(models.LinkColumns.DisplayOrder+" ASC"),
 	).All(ctx, r.db)
 	if err != nil {
 		return nil, err
@@ -241,6 +242,7 @@ func (r *PortalPageRepository) ListByUserID(ctx context.Context, userID int) ([]
 }
 
 // FindByID 根據 ID 查找 Portal Page with Links
+// 依照 display_order 升冪排序
 func (r *PortalPageRepository) FindByID(ctx context.Context, id int) (*domain.PortalPage, error) {
 	m, err := models.FindPortalPage(ctx, r.db, id)
 	if err != nil {
@@ -249,6 +251,7 @@ func (r *PortalPageRepository) FindByID(ctx context.Context, id int) (*domain.Po
 
 	links, err := models.Links(
 		models.LinkWhere.PortalPageID.EQ(m.ID),
+		qm.OrderBy(models.LinkColumns.DisplayOrder+" ASC"),
 	).All(ctx, r.db)
 	if err != nil {
 		return nil, err

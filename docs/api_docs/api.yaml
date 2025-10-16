@@ -126,6 +126,79 @@ paths:
                 message: "Internal server error"
 
   /me/portal-pages/{id}:
+    get:
+      tags:
+        - portal-page
+      summary: Get My Portal Page By ID
+      description: Get a single portal page (with links) owned by the authenticated user. Links are sorted ascending by display_order.
+      operationId: findMyPortalPageById
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Portal Page ID
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Portal Page retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FindPortalPageByIDResponse'
+              example:
+                id: 1
+                slug: "john-doe"
+                title: "John's Page"
+                bio: "Welcome to my personal page!"
+                profile_image_url: "https://example.com/images/john.jpg"
+                theme: "light"
+                links:
+                  - id: 1
+                    title: "My Blog"
+                    url: "https://blog.example.com"
+                    description: "Check out my blog"
+                    icon_url: "https://example.com/icons/blog.png"
+                    display_order: 1
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "ErrInvalidParams"
+                message: "Invalid request parameters"
+        '401':
+          description: Unauthorized access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "ErrUnauthorized"
+                message: "Invalid access token"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "ErrForbidden"
+                message: "You do not have permission"
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "ErrNotFound"
+                message: "Resource not found"
     put:
       tags:
         - portal-page
@@ -263,16 +336,16 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
                 error: "ErrForbidden"
-                message: "You do not have permission to update this page"
+                message: "You do not have permission"
         '404':
-          description: Portal Page not found
+          description: Resource not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
-                error: "ErrPortalPageNotFound"
-                message: "Portal Page not found"
+                error: "ErrNotFound"
+                message: "Resource not found"
         '500':
           description: Internal server error
           content:
@@ -696,6 +769,78 @@ components:
           type: integer
           format: int64
           description: Portal Page ID
+          example: 1
+
+    FindPortalPageByIDResponse:
+      type: object
+      required:
+        - id
+        - slug
+        - title
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Portal Page ID
+          example: 1
+        slug:
+          type: string
+          description: 個人頁面的唯一標識符
+          example: "john-doe"
+        title:
+          type: string
+          description: 頁面標題
+          example: "John's Page"
+        bio:
+          type: string
+          description: 個人簡介（可為空）
+          example: "Welcome to my personal page!"
+        profile_image_url:
+          type: string
+          description: 個人頭像圖片網址（可為空）
+          format: uri
+          example: "https://example.com/images/john.jpg"
+        theme:
+          type: string
+          enum: [light, dark]
+          description: 頁面主題
+          example: "light"
+        links:
+          type: array
+          description: 該頁面的連結清單（依 display_order 升冪排序）
+          items:
+            $ref: '#/components/schemas/LinkDetail'
+
+    LinkDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Link ID
+          example: 1
+        title:
+          type: string
+          description: 連結標題
+          example: "My Blog"
+        url:
+          type: string
+          format: uri
+          description: 連結網址
+          example: "https://blog.example.com"
+        description:
+          type: string
+          description: 連結描述（可為空）
+          example: "Check out my blog"
+        icon_url:
+          type: string
+          format: uri
+          description: 連結圖示 URL（可為空）
+          example: "https://example.com/icons/blog.png"
+        display_order:
+          type: integer
+          minimum: 1
+          description: 顯示順序（升冪排序）
           example: 1
 
     ListPortalPagesResponse:

@@ -19,6 +19,7 @@ type PortalPageHandler struct {
 	createPortalPageUC *usecase.CreatePortalPageUC
 	updatePortalPageUC *usecase.UpdatePortalPageUC
 	listPortalPagesUC  *usecase.ListPortalPagesUC
+	findByIDUC         *usecase.FindPortalPageByIDUC
 }
 
 // NewPortalPageHandler 建立新的個人頁面處理器
@@ -28,9 +29,11 @@ func NewPortalPageHandler(e *gin.Engine, db *sql.DB) error {
 		createPortalPageUC: usecase.NewCreatePortalPageUC(portalPageRepo),
 		updatePortalPageUC: usecase.NewUpdatePortalPageUC(portalPageRepo),
 		listPortalPagesUC:  usecase.NewListPortalPagesUC(portalPageRepo),
+		findByIDUC:         usecase.NewFindPortalPageByIDUC(portalPageRepo),
 	}
 
 	e.GET("/api/v1/me/portal-pages", pkg.AuthMiddleware(db), handler.ListPortalPages)
+	e.GET("/api/v1/me/portal-pages/:id", pkg.AuthMiddleware(db), handler.FindPortalPageByID)
 	e.POST("/api/v1/me/portal-pages", pkg.AuthMiddleware(db), handler.CreatePortalPage)
 	e.PUT("/api/v1/me/portal-pages/:id", pkg.AuthMiddleware(db), handler.UpdatePortalPage)
 
@@ -154,6 +157,58 @@ func (h *PortalPageHandler) UpdatePortalPage(c *gin.Context) {
 	c.JSON(http.StatusOK, &usecase.UpdatePortalPageResult{
 		ID: result.ID,
 	})
+}
+
+// FindPortalPageByID 取得單一 Portal Page（含 Links）
+func (h *PortalPageHandler) FindPortalPageByID(c *gin.Context) {
+	// 取得已驗證的使用者 ID
+	userID, err := pkg.GetUserIDFromContext(c)
+	if err != nil {
+		http_error.ResponseInternalServerError(c, nil)
+		return
+	}
+
+	// 取得路徑參數中的 Portal Page ID
+	portalPageIDStr := c.Param("id")
+	portalPageID, err := strconv.Atoi(portalPageIDStr)
+	if err != nil || portalPageID <= 0 {
+		http_error.ResponseBadRequest(c, nil)
+		return
+	}
+
+	// 將 userID 從字符串轉換為整數
+	userIDInt, err := strconv.Atoi(userID)
+	if err != nil {
+		http_error.ResponseInternalServerError(c, nil)
+		return
+	}
+
+	// 執行查詢邏輯
+	params := &usecase.FindPortalPageByIDParams{
+		UserID: userIDInt,
+		ID:     portalPageID,
+	}
+	result, err := h.findByIDUC.Execute(c.Request.Context(), params)
+	if err != nil {
+		if errors.Is(err, domain.ErrInvalidParams) {
+			http_error.ResponseBadRequest(c, &http_error.ErrorResponse{Message: err.Error()})
+			return
+		}
+		if errors.Is(err, domain.ErrUnauthorized) {
+			http_error.ResponseForbidden(c, &http_error.ErrorResponse{Message: err.Error()})
+			return
+		}
+		if errors.Is(err, domain.ErrPortalPageNotFound) {
+			http_error.ResponseNotFound(c, nil)
+			return
+		}
+
+		http_error.ResponseInternalServerError(c, &http_error.ErrorResponse{Message: err.Error()})
+		return
+	}
+
+	// 返回成功響應
+	c.JSON(http.StatusOK, result)
 }
 
 // ListPortalPages 處理列出個人頁面請求
