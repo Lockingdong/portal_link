@@ -20,6 +20,7 @@ type PortalPageHandler struct {
 	updatePortalPageUC *usecase.UpdatePortalPageUC
 	listPortalPagesUC  *usecase.ListPortalPagesUC
 	findByIDUC         *usecase.FindPortalPageByIDUC
+	findBySlugUC       *usecase.FindPortalPageBySlugUC
 }
 
 // NewPortalPageHandler 建立新的個人頁面處理器
@@ -30,12 +31,16 @@ func NewPortalPageHandler(e *gin.Engine, db *sql.DB) error {
 		updatePortalPageUC: usecase.NewUpdatePortalPageUC(portalPageRepo),
 		listPortalPagesUC:  usecase.NewListPortalPagesUC(portalPageRepo),
 		findByIDUC:         usecase.NewFindPortalPageByIDUC(portalPageRepo),
+		findBySlugUC:       usecase.NewFindPortalPageBySlugUC(portalPageRepo),
 	}
 
 	e.GET("/api/v1/me/portal-pages", pkg.AuthMiddleware(db), handler.ListPortalPages)
 	e.GET("/api/v1/me/portal-pages/:id", pkg.AuthMiddleware(db), handler.FindPortalPageByID)
 	e.POST("/api/v1/me/portal-pages", pkg.AuthMiddleware(db), handler.CreatePortalPage)
 	e.PUT("/api/v1/me/portal-pages/:id", pkg.AuthMiddleware(db), handler.UpdatePortalPage)
+
+	// Public endpoint: find portal page by slug (no auth)
+	e.GET("/api/v1/portal-pages/:slug", handler.FindPortalPageBySlug)
 
 	return nil
 }
@@ -64,7 +69,7 @@ func (h *PortalPageHandler) CreatePortalPage(c *gin.Context) {
 		return
 	}
 	params.UserID = userIDInt
-	result, err := h.createPortalPageUC.Execute(c.Request.Context(), &params)
+	result, err := h.createPortalPageUC.Execute(c, &params)
 	if err != nil {
 		if errors.Is(err, domain.ErrInvalidParams) || errors.Is(err, domain.ErrSlugExists) {
 			http_error.ResponseBadRequest(c, &http_error.ErrorResponse{
@@ -123,7 +128,7 @@ func (h *PortalPageHandler) UpdatePortalPage(c *gin.Context) {
 	params.PortalPageID = portalPageID
 
 	// 執行更新頁面邏輯
-	result, err := h.updatePortalPageUC.Execute(c.Request.Context(), &params)
+	result, err := h.updatePortalPageUC.Execute(c, &params)
 	if err != nil {
 		// 處理各種錯誤情況
 		if errors.Is(err, domain.ErrPortalPageNotFound) {
@@ -188,7 +193,7 @@ func (h *PortalPageHandler) FindPortalPageByID(c *gin.Context) {
 		UserID: userIDInt,
 		ID:     portalPageID,
 	}
-	result, err := h.findByIDUC.Execute(c.Request.Context(), params)
+	result, err := h.findByIDUC.Execute(c, params)
 	if err != nil {
 		if errors.Is(err, domain.ErrInvalidParams) {
 			http_error.ResponseBadRequest(c, &http_error.ErrorResponse{Message: err.Error()})
@@ -199,7 +204,7 @@ func (h *PortalPageHandler) FindPortalPageByID(c *gin.Context) {
 			return
 		}
 		if errors.Is(err, domain.ErrPortalPageNotFound) {
-			http_error.ResponseNotFound(c, nil)
+			http_error.ResponseNotFound(c, &http_error.ErrorResponse{Message: err.Error()})
 			return
 		}
 
@@ -231,11 +236,36 @@ func (h *PortalPageHandler) ListPortalPages(c *gin.Context) {
 	params := &usecase.ListPortalPagesParams{
 		UserID: userIDInt,
 	}
-	result, err := h.listPortalPagesUC.Execute(c.Request.Context(), params)
+	result, err := h.listPortalPagesUC.Execute(c, params)
 	if err != nil {
 		http_error.ResponseInternalServerError(c, &http_error.ErrorResponse{
 			Message: err.Error(),
 		})
+		return
+	}
+
+	// 返回成功響應
+	c.JSON(http.StatusOK, result)
+}
+
+// FindPortalPageBySlug 透過 slug 取得公開的 Portal Page（含 Links）
+func (h *PortalPageHandler) FindPortalPageBySlug(c *gin.Context) {
+	slug := c.Param("slug")
+
+	// 執行查詢邏輯
+	params := &usecase.FindPortalPageBySlugParams{Slug: slug}
+	result, err := h.findBySlugUC.Execute(c, params)
+	if err != nil {
+		if errors.Is(err, domain.ErrInvalidParams) {
+			http_error.ResponseBadRequest(c, &http_error.ErrorResponse{Message: err.Error()})
+			return
+		}
+		if errors.Is(err, domain.ErrPortalPageNotFound) {
+			http_error.ResponseNotFound(c, &http_error.ErrorResponse{Message: err.Error()})
+			return
+		}
+
+		http_error.ResponseInternalServerError(c, &http_error.ErrorResponse{Message: err.Error()})
 		return
 	}
 

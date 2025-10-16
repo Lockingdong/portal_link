@@ -515,6 +515,69 @@ paths:
                 error: "ErrInternal"
                 message: "Internal server error"
 
+  /portal-pages/{slug}:
+    get:
+      tags:
+        - portal-page
+      summary: Find Portal Page By Slug
+      description: Public endpoint to get a portal page (with links) by slug. Links are sorted ascending by display_order.
+      operationId: findPortalPageBySlug
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          description: Portal Page slug
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Portal Page retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FindPortalPageByIDResponse'
+              example:
+                id: 1
+                slug: "john-doe"
+                title: "John's Page"
+                bio: "Welcome to my personal page!"
+                profile_image_url: "https://example.com/images/john.jpg"
+                theme: "light"
+                links:
+                  - id: 1
+                    title: "My Blog"
+                    url: "https://blog.example.com"
+                    description: "Check out my blog"
+                    icon_url: "https://example.com/icons/blog.png"
+                    display_order: 1
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "ErrInvalidParams"
+                message: "Invalid request parameters"
+        '404':
+          description: Page not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "ErrNotFound"
+                message: "Resource not found"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "ErrInternal"
+                message: "Internal server error"
+
 components:
   schemas:
     SignUpRequest:

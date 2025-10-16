@@ -20,6 +20,7 @@ nav:
         - Create Portal Page: modules/portal_page/usecase/create_portal_page_uc.md
         - Update Portal Page: modules/portal_page/usecase/update_portal_page_uc.md
         - List Portal Page: modules/portal_page/usecase/list_portal_page_uc.md
+        - Find Portal Page By Slug: modules/portal_page/usecase/find_portal_page_by_slug_uc.md
   - Pkg:
     - Auth: pkg/auth.md
 

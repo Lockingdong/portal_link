@@ -1,4 +1,4 @@
-@access_token = eyJ1c2VyX2lkIjoiMSIsImV4cGlyZXNfYXQiOiIyMDI1LTEwLTE3VDE3OjIwOjQ0LjMwMzQyOVoifQ==
+@access_token = eyJ1c2VyX2lkIjoiMSIsImV4cGlyZXNfYXQiOiIyMDI1LTEwLTE3VDE4OjA0OjAwLjE5MzExM1oifQ==
 
 ### Sign Up
 POST http://localhost:8080/api/v1/user/signup
@@ -68,3 +68,6 @@ Authorization: Bearer {{access_token}}
     }
   ]
 }
+
+### Find Portal Page By Slug
+GET http://localhost:8080/api/v1/portal-pages/good-example-3
