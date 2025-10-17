@@ -63,4 +63,34 @@ sqlboiler psql
 mkdocs serve
 ```
 
+## 使用 Taskfile
+
+Taskfile 讓常用開發指令更一致。請先安裝 Task：
+
+```bash
+brew install go-task/tap/go-task
+```
+
+列出可用任務：
+
+```bash
+task --list
+```
+
+常用任務對照：
+
+```bash
+# 執行資料庫遷移（向上）
+task migrate-up
+
+# 回滾資料庫遷移（向下）
+task migrate-down
+
+# 生成 SQLBoiler 模型
+task generate-models
+
+# 啟動 MkDocs 文檔服務
+task mkdocs-serve
+```
+
 ---
