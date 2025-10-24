@@ -101,7 +101,7 @@
 2. Slug 唯一性檢查
 3. 資料庫操作
 
-## 相關實體
+## 相關物件
 
 - **PortalPage Entity**: Portal Page 領域實體（聚合根）
 - **Link Entity**: Link 領域實體（聚合內實體）

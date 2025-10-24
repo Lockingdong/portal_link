@@ -356,6 +356,76 @@ paths:
                 error: "ErrInternal"
                 message: "Internal server error"
 
+  /portal-pages/{slug}:
+    get:
+      tags:
+        - portal-page
+      summary: Get Portal Page By Slug
+      description: Get a single public portal page (with links) by slug. Public access without authentication. Links are sorted ascending by display_order.
+      operationId: findPortalPageBySlug
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          description: Portal Page 自訂網址
+          schema:
+            type: string
+            pattern: '^[a-z0-9]+(-[a-z0-9]+)*$'
+      responses:
+        '200':
+          description: Portal Page retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FindPortalPageBySlugResponse'
+              example:
+                id: 1
+                slug: "john-doe"
+                title: "John's Page"
+                bio: "Welcome to my personal page!"
+                profile_image_url: "https://example.com/images/john.jpg"
+                theme: "light"
+                links:
+                  - id: 1
+                    title: "My Blog"
+                    url: "https://blog.example.com"
+                    description: "Check out my blog"
+                    icon_url: "https://example.com/icons/blog.png"
+                    display_order: 1
+                  - id: 2
+                    title: "My GitHub"
+                    url: "https://github.com/johndoe"
+                    description: "Check out my projects"
+                    icon_url: "https://example.com/icons/github.png"
+                    display_order: 2
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "ErrInvalidParams"
+                message: "輸入參數不符合驗證規則"
+        '404':
+          description: Portal Page not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "ErrPortalPageNotFound"
+                message: "查無符合 slug 的 Portal Page"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "ErrInternal"
+                message: "Internal server error"
+
   /me/portal-pages:
     get:
       tags:
@@ -835,6 +905,46 @@ components:
           example: 1
 
     FindPortalPageByIDResponse:
+      type: object
+      required:
+        - id
+        - slug
+        - title
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Portal Page ID
+          example: 1
+        slug:
+          type: string
+          description: 個人頁面的唯一標識符
+          example: "john-doe"
+        title:
+          type: string
+          description: 頁面標題
+          example: "John's Page"
+        bio:
+          type: string
+          description: 個人簡介（可為空）
+          example: "Welcome to my personal page!"
+        profile_image_url:
+          type: string
+          description: 個人頭像圖片網址（可為空）
+          format: uri
+          example: "https://example.com/images/john.jpg"
+        theme:
+          type: string
+          enum: [light, dark]
+          description: 頁面主題
+          example: "light"
+        links:
+          type: array
+          description: 該頁面的連結清單（依 display_order 升冪排序）
+          items:
+            $ref: '#/components/schemas/LinkDetail'
+
+    FindPortalPageBySlugResponse:
       type: object
       required:
         - id

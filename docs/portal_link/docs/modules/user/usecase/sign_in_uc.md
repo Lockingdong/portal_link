@@ -49,7 +49,7 @@
 - 登入失敗時不透露具體原因（使用者不存在 or 密碼錯誤），統一返回 `ErrInvalidCredentials` 以提高安全性
 - Access token 產生方式：請參考 [Authentication](../../../auth.md)
 
-## 相關實體
+## 相關物件
 
 - **User Entity**: 使用者領域實體
 - **User Repository**: 使用者資料存取介面

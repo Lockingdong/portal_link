@@ -15,3 +15,6 @@ coverage.html
 
 # OS files
 .DS_Store
+
+# API Examples
+api.http

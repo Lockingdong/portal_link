@@ -50,7 +50,7 @@
 - **空結果處理**：若使用者尚未建立任何 Portal Page，返回空陣列
 - **返回所有資料**：一次返回該使用者的所有 Portal Pages，不進行分頁
 
-## 相關實體
+## 相關物件
 
 - **PortalPage Entity**: Portal Page 領域實體（聚合根）
 - **PortalPage Repository**: Portal Page 資料存取介面

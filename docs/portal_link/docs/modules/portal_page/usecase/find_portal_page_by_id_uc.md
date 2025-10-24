@@ -83,7 +83,7 @@
 - 若頁面尚未設定任何 Link，`links` 為空陣列
 - Links 以 `display_order` 升冪排序返回
 
-## 相關實體
+## 相關物件
 
 - **PortalPage Entity**: Portal Page 領域實體（聚合根）
 - **Link Entity**: Link 領域實體（聚合內實體）
