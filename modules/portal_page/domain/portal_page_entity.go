@@ -55,7 +55,8 @@ func NewPortalPage(params PortalPageParams) *PortalPage {
 
 // AddLink 新增 Link 到 PortalPage（聚合根方法）
 func (p *PortalPage) AddLink(params LinkParams) {
-	link := newLink(p.ID, params)
+	params.PortalPageID = p.ID
+	link := NewLink(params)
 	p.Links = append(p.Links, link)
 	p.UpdatedAt = time.Now().UTC()
 }

@@ -149,7 +149,7 @@ func (u *UpdatePortalPageUC) validateParams(params *UpdatePortalPageParams, exis
 	// 驗證 theme（如有更新）
 	if params.Theme != "" {
 		theme := domain.Theme(params.Theme)
-		if !theme.IsValid() {
+		if theme != domain.ThemeLight && theme != domain.ThemeDark {
 			return errors.Wrap(domain.ErrInvalidParams, "theme must be one of: light, dark")
 		}
 	}

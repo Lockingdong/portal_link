@@ -262,7 +262,7 @@ func TestCreatePortalPageUC_Execute(t *testing.T) {
 				assert.NotNil(t, result)
 				portalPage, err := repo.FindBySlug(ctx, "test-page")
 				assert.NoError(t, err)
-				assert.Equal(t, domain.GetDefaultTheme(), portalPage.Theme)
+				assert.Equal(t, domain.ThemeLight, portalPage.Theme)
 			},
 		},
 	}

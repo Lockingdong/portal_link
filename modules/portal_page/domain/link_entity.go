@@ -19,8 +19,8 @@ type Link struct {
 // LinkParams 用於建立或更新 Link 的參數
 type LinkParams Link
 
-// newLink 建立新的 Link 實體（私有方法，只能透過 PortalPage 聚合根調用）
-func newLink(portalPageID int, params LinkParams) *Link {
+// NewLink 建立新的 Link 實體（私有方法，只能透過 PortalPage 聚合根調用）
+func NewLink(params LinkParams) *Link {
 	now := time.Now().UTC()
 
 	if params.CreatedAt.IsZero() {
@@ -33,7 +33,7 @@ func newLink(portalPageID int, params LinkParams) *Link {
 
 	return &Link{
 		ID:           params.ID,
-		PortalPageID: portalPageID,
+		PortalPageID: params.PortalPageID,
 		Title:        params.Title,
 		URL:          params.URL,
 		Description:  params.Description,

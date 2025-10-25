@@ -114,7 +114,7 @@ func (c *CreatePortalPageUC) validateParams(params *CreatePortalPageParams) erro
 	// 驗證 theme（選填）
 	if params.Theme != "" {
 		theme := domain.Theme(params.Theme)
-		if !theme.IsValid() {
+		if theme != domain.ThemeLight && theme != domain.ThemeDark {
 			return errors.Wrap(domain.ErrInvalidParams, "theme must be one of: light, dark")
 		}
 	}
@@ -172,7 +172,7 @@ func validateProfileImageURL(profileImageURL string) error {
 // getThemeOrDefault 取得 theme 或返回預設值
 func getThemeOrDefault(theme string) domain.Theme {
 	if theme == "" {
-		return domain.GetDefaultTheme()
+		return domain.ThemeLight
 	}
 	return domain.Theme(theme)
 }
