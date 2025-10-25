@@ -8,6 +8,11 @@ type PortalPageRepository interface {
 	Create(ctx context.Context, portalPage *PortalPage) error
 
 	// Update 更新 Portal Page
+	// 流程：
+	// 1. 查找現有的 Portal Page
+	// 2. 更新 Portal Page 的欄位
+	// 3. 更新 Portal Page 的 Links
+	// 4. 刪除不存在於新的 Links 中的舊 Links
 	Update(ctx context.Context, portalPage *PortalPage) error
 
 	// FindBySlug 根據 Slug 查找 Portal Page

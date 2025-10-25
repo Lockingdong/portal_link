@@ -81,6 +81,11 @@ func (r *PortalPageRepository) Create(ctx context.Context, portalPage *domain.Po
 }
 
 // Update 更新 Portal Page
+// 流程：
+// 1. 查找現有的 Portal Page
+// 2. 更新 Portal Page 的欄位
+// 3. 更新 Portal Page 的 Links
+// 4. 刪除不存在於新的 Links 中的舊 Links
 func (r *PortalPageRepository) Update(ctx context.Context, portalPage *domain.PortalPage) error {
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
