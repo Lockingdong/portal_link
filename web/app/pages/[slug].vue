@@ -48,7 +48,7 @@
           </div>
 
           <h1 class="text-3xl font-bold mb-2">{{ page.title }}</h1>
-          <p v-if="page.bio" class="text-gray-600 dark:text-gray-300">
+          <p v-if="page.bio" class="text-gray-600 dark:text-gray-500">
             {{ page.bio }}
           </p>
         </div>

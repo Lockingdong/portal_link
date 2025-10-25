@@ -21,7 +21,7 @@
         <div class="rounded-md shadow-sm space-y-4">
           <div>
             <label for="name" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
-              姓名
+              稱呼
             </label>
             <input
               id="name"
@@ -29,7 +29,7 @@
               type="text"
               required
               class="appearance-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-              placeholder="請輸入您的姓名"
+              placeholder="請輸入您的稱呼"
             />
           </div>
 

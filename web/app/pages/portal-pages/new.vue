@@ -112,7 +112,7 @@
         </button>
         <NuxtLink
           to="/dashboard"
-          class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800"
+          class="px-4 py-2 text-white border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800"
         >
           取消
         </NuxtLink>
