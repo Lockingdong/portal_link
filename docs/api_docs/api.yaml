@@ -661,7 +661,7 @@ components:
           type: string
           minLength: 1
           maxLength: 255
-          description: 使用者全名
+          description: 使用者稱呼
           example: "張三"
         email:
           type: string
