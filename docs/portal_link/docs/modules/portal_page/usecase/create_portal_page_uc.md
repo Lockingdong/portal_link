@@ -49,7 +49,7 @@
 5. 系統透過 Repository 將 Portal Page 存入資料庫
 6. 系統返回建立成功的 PortalPage 實體
 
-## 錯誤流程
+## 錯誤結果
 
 ### 輸入參數驗證失敗
 - 系統返回錯誤 `ErrInvalidParams`

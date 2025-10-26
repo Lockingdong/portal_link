@@ -31,7 +31,7 @@
 5. 系統使用 `GenerateAccessToken` 方法產生該 User 的 access_token（詳見 [Authentication](../../../auth.md)）
 6. 系統返回 access_token
 
-## 錯誤流程
+## 錯誤結果
 
 ### 輸入參數驗證失敗
 - 系統返回錯誤 `ErrInvalidParams`

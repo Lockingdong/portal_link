@@ -55,7 +55,7 @@
 
 4. 系統返回完整的 Portal Page 實體（含 Links）
 
-## 錯誤流程
+## 錯誤結果
 
 ### 輸入參數驗證失敗
 - 系統返回錯誤 `ErrInvalidParams`
