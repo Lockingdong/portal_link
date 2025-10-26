@@ -140,10 +140,10 @@ var GooseDBVersionWhere = struct {
 	IsApplied whereHelperbool
 	Tstamp    whereHelpertime_Time
 }{
-	ID:        whereHelperint{field: "\"portal_link\".\"goose_db_version\".\"id\""},
-	VersionID: whereHelperint64{field: "\"portal_link\".\"goose_db_version\".\"version_id\""},
-	IsApplied: whereHelperbool{field: "\"portal_link\".\"goose_db_version\".\"is_applied\""},
-	Tstamp:    whereHelpertime_Time{field: "\"portal_link\".\"goose_db_version\".\"tstamp\""},
+	ID:        whereHelperint{field: "\"goose_db_version\".\"id\""},
+	VersionID: whereHelperint64{field: "\"goose_db_version\".\"version_id\""},
+	IsApplied: whereHelperbool{field: "\"goose_db_version\".\"is_applied\""},
+	Tstamp:    whereHelpertime_Time{field: "\"goose_db_version\".\"tstamp\""},
 }
 
 // GooseDBVersionRels is where relationship names are stored.
@@ -477,10 +477,10 @@ func (q gooseDBVersionQuery) Exists(ctx context.Context, exec boil.ContextExecut
 
 // GooseDBVersions retrieves all the records using an executor.
 func GooseDBVersions(mods ...qm.QueryMod) gooseDBVersionQuery {
-	mods = append(mods, qm.From("\"portal_link\".\"goose_db_version\""))
+	mods = append(mods, qm.From("\"goose_db_version\""))
 	q := NewQuery(mods...)
 	if len(queries.GetSelect(q)) == 0 {
-		queries.SetSelect(q, []string{"\"portal_link\".\"goose_db_version\".*"})
+		queries.SetSelect(q, []string{"\"goose_db_version\".*"})
 	}
 
 	return gooseDBVersionQuery{q}
@@ -496,7 +496,7 @@ func FindGooseDBVersion(ctx context.Context, exec boil.ContextExecutor, iD int, 
 		sel = strings.Join(strmangle.IdentQuoteSlice(dialect.LQ, dialect.RQ, selectCols), ",")
 	}
 	query := fmt.Sprintf(
-		"select %s from \"portal_link\".\"goose_db_version\" where \"id\"=$1", sel,
+		"select %s from \"goose_db_version\" where \"id\"=$1", sel,
 	)
 
 	q := queries.Raw(query, iD)
@@ -553,9 +553,9 @@ func (o *GooseDBVersion) Insert(ctx context.Context, exec boil.ContextExecutor, 
 			return err
 		}
 		if len(wl) != 0 {
-			cache.query = fmt.Sprintf("INSERT INTO \"portal_link\".\"goose_db_version\" (\"%s\") %%sVALUES (%s)%%s", strings.Join(wl, "\",\""), strmangle.Placeholders(dialect.UseIndexPlaceholders, len(wl), 1, 1))
+			cache.query = fmt.Sprintf("INSERT INTO \"goose_db_version\" (\"%s\") %%sVALUES (%s)%%s", strings.Join(wl, "\",\""), strmangle.Placeholders(dialect.UseIndexPlaceholders, len(wl), 1, 1))
 		} else {
-			cache.query = "INSERT INTO \"portal_link\".\"goose_db_version\" %sDEFAULT VALUES%s"
+			cache.query = "INSERT INTO \"goose_db_version\" %sDEFAULT VALUES%s"
 		}
 
 		var queryOutput, queryReturning string
@@ -621,7 +621,7 @@ func (o *GooseDBVersion) Update(ctx context.Context, exec boil.ContextExecutor, 
 			return 0, errors.New("models: unable to update goose_db_version, could not build whitelist")
 		}
 
-		cache.query = fmt.Sprintf("UPDATE \"portal_link\".\"goose_db_version\" SET %s WHERE %s",
+		cache.query = fmt.Sprintf("UPDATE \"goose_db_version\" SET %s WHERE %s",
 			strmangle.SetParamNames("\"", "\"", 1, wl),
 			strmangle.WhereClause("\"", "\"", len(wl)+1, gooseDBVersionPrimaryKeyColumns),
 		)
@@ -702,7 +702,7 @@ func (o GooseDBVersionSlice) UpdateAll(ctx context.Context, exec boil.ContextExe
 		args = append(args, pkeyArgs...)
 	}
 
-	sql := fmt.Sprintf("UPDATE \"portal_link\".\"goose_db_version\" SET %s WHERE %s",
+	sql := fmt.Sprintf("UPDATE \"goose_db_version\" SET %s WHERE %s",
 		strmangle.SetParamNames("\"", "\"", 1, colNames),
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), len(colNames)+1, gooseDBVersionPrimaryKeyColumns, len(o)))
 
@@ -798,7 +798,7 @@ func (o *GooseDBVersion) Upsert(ctx context.Context, exec boil.ContextExecutor, 
 			conflict = make([]string, len(gooseDBVersionPrimaryKeyColumns))
 			copy(conflict, gooseDBVersionPrimaryKeyColumns)
 		}
-		cache.query = buildUpsertQueryPostgres(dialect, "\"portal_link\".\"goose_db_version\"", updateOnConflict, ret, update, conflict, insert, opts...)
+		cache.query = buildUpsertQueryPostgres(dialect, "\"goose_db_version\"", updateOnConflict, ret, update, conflict, insert, opts...)
 
 		cache.valueMapping, err = queries.BindMapping(gooseDBVersionType, gooseDBVersionMapping, insert)
 		if err != nil {
@@ -857,7 +857,7 @@ func (o *GooseDBVersion) Delete(ctx context.Context, exec boil.ContextExecutor) 
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), gooseDBVersionPrimaryKeyMapping)
-	sql := "DELETE FROM \"portal_link\".\"goose_db_version\" WHERE \"id\"=$1"
+	sql := "DELETE FROM \"goose_db_version\" WHERE \"id\"=$1"
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -922,7 +922,7 @@ func (o GooseDBVersionSlice) DeleteAll(ctx context.Context, exec boil.ContextExe
 		args = append(args, pkeyArgs...)
 	}
 
-	sql := "DELETE FROM \"portal_link\".\"goose_db_version\" WHERE " +
+	sql := "DELETE FROM \"goose_db_version\" WHERE " +
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, gooseDBVersionPrimaryKeyColumns, len(o))
 
 	if boil.IsDebug(ctx) {
@@ -977,7 +977,7 @@ func (o *GooseDBVersionSlice) ReloadAll(ctx context.Context, exec boil.ContextEx
 		args = append(args, pkeyArgs...)
 	}
 
-	sql := "SELECT \"portal_link\".\"goose_db_version\".* FROM \"portal_link\".\"goose_db_version\" WHERE " +
+	sql := "SELECT \"goose_db_version\".* FROM \"goose_db_version\" WHERE " +
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, gooseDBVersionPrimaryKeyColumns, len(*o))
 
 	q := queries.Raw(sql, args...)
@@ -995,7 +995,7 @@ func (o *GooseDBVersionSlice) ReloadAll(ctx context.Context, exec boil.ContextEx
 // GooseDBVersionExists checks if the GooseDBVersion row exists.
 func GooseDBVersionExists(ctx context.Context, exec boil.ContextExecutor, iD int) (bool, error) {
 	var exists bool
-	sql := "select exists(select 1 from \"portal_link\".\"goose_db_version\" where \"id\"=$1 limit 1)"
+	sql := "select exists(select 1 from \"goose_db_version\" where \"id\"=$1 limit 1)"
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)

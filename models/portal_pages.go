@@ -104,15 +104,15 @@ var PortalPageWhere = struct {
 	CreatedAt       whereHelpernull_Time
 	UpdatedAt       whereHelpernull_Time
 }{
-	ID:              whereHelperint{field: "\"portal_link\".\"portal_pages\".\"id\""},
-	UserID:          whereHelperint{field: "\"portal_link\".\"portal_pages\".\"user_id\""},
-	Slug:            whereHelperstring{field: "\"portal_link\".\"portal_pages\".\"slug\""},
-	Title:           whereHelperstring{field: "\"portal_link\".\"portal_pages\".\"title\""},
-	Bio:             whereHelpernull_String{field: "\"portal_link\".\"portal_pages\".\"bio\""},
-	ProfileImageURL: whereHelpernull_String{field: "\"portal_link\".\"portal_pages\".\"profile_image_url\""},
-	Theme:           whereHelpernull_String{field: "\"portal_link\".\"portal_pages\".\"theme\""},
-	CreatedAt:       whereHelpernull_Time{field: "\"portal_link\".\"portal_pages\".\"created_at\""},
-	UpdatedAt:       whereHelpernull_Time{field: "\"portal_link\".\"portal_pages\".\"updated_at\""},
+	ID:              whereHelperint{field: "\"portal_pages\".\"id\""},
+	UserID:          whereHelperint{field: "\"portal_pages\".\"user_id\""},
+	Slug:            whereHelperstring{field: "\"portal_pages\".\"slug\""},
+	Title:           whereHelperstring{field: "\"portal_pages\".\"title\""},
+	Bio:             whereHelpernull_String{field: "\"portal_pages\".\"bio\""},
+	ProfileImageURL: whereHelpernull_String{field: "\"portal_pages\".\"profile_image_url\""},
+	Theme:           whereHelpernull_String{field: "\"portal_pages\".\"theme\""},
+	CreatedAt:       whereHelpernull_Time{field: "\"portal_pages\".\"created_at\""},
+	UpdatedAt:       whereHelpernull_Time{field: "\"portal_pages\".\"updated_at\""},
 }
 
 // PortalPageRels is where relationship names are stored.
@@ -446,10 +446,10 @@ func (q portalPageQuery) Exists(ctx context.Context, exec boil.ContextExecutor) 
 
 // PortalPages retrieves all the records using an executor.
 func PortalPages(mods ...qm.QueryMod) portalPageQuery {
-	mods = append(mods, qm.From("\"portal_link\".\"portal_pages\""))
+	mods = append(mods, qm.From("\"portal_pages\""))
 	q := NewQuery(mods...)
 	if len(queries.GetSelect(q)) == 0 {
-		queries.SetSelect(q, []string{"\"portal_link\".\"portal_pages\".*"})
+		queries.SetSelect(q, []string{"\"portal_pages\".*"})
 	}
 
 	return portalPageQuery{q}
@@ -465,7 +465,7 @@ func FindPortalPage(ctx context.Context, exec boil.ContextExecutor, iD int, sele
 		sel = strings.Join(strmangle.IdentQuoteSlice(dialect.LQ, dialect.RQ, selectCols), ",")
 	}
 	query := fmt.Sprintf(
-		"select %s from \"portal_link\".\"portal_pages\" where \"id\"=$1", sel,
+		"select %s from \"portal_pages\" where \"id\"=$1", sel,
 	)
 
 	q := queries.Raw(query, iD)
@@ -532,9 +532,9 @@ func (o *PortalPage) Insert(ctx context.Context, exec boil.ContextExecutor, colu
 			return err
 		}
 		if len(wl) != 0 {
-			cache.query = fmt.Sprintf("INSERT INTO \"portal_link\".\"portal_pages\" (\"%s\") %%sVALUES (%s)%%s", strings.Join(wl, "\",\""), strmangle.Placeholders(dialect.UseIndexPlaceholders, len(wl), 1, 1))
+			cache.query = fmt.Sprintf("INSERT INTO \"portal_pages\" (\"%s\") %%sVALUES (%s)%%s", strings.Join(wl, "\",\""), strmangle.Placeholders(dialect.UseIndexPlaceholders, len(wl), 1, 1))
 		} else {
-			cache.query = "INSERT INTO \"portal_link\".\"portal_pages\" %sDEFAULT VALUES%s"
+			cache.query = "INSERT INTO \"portal_pages\" %sDEFAULT VALUES%s"
 		}
 
 		var queryOutput, queryReturning string
@@ -606,7 +606,7 @@ func (o *PortalPage) Update(ctx context.Context, exec boil.ContextExecutor, colu
 			return 0, errors.New("models: unable to update portal_pages, could not build whitelist")
 		}
 
-		cache.query = fmt.Sprintf("UPDATE \"portal_link\".\"portal_pages\" SET %s WHERE %s",
+		cache.query = fmt.Sprintf("UPDATE \"portal_pages\" SET %s WHERE %s",
 			strmangle.SetParamNames("\"", "\"", 1, wl),
 			strmangle.WhereClause("\"", "\"", len(wl)+1, portalPagePrimaryKeyColumns),
 		)
@@ -687,7 +687,7 @@ func (o PortalPageSlice) UpdateAll(ctx context.Context, exec boil.ContextExecuto
 		args = append(args, pkeyArgs...)
 	}
 
-	sql := fmt.Sprintf("UPDATE \"portal_link\".\"portal_pages\" SET %s WHERE %s",
+	sql := fmt.Sprintf("UPDATE \"portal_pages\" SET %s WHERE %s",
 		strmangle.SetParamNames("\"", "\"", 1, colNames),
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), len(colNames)+1, portalPagePrimaryKeyColumns, len(o)))
 
@@ -791,7 +791,7 @@ func (o *PortalPage) Upsert(ctx context.Context, exec boil.ContextExecutor, upda
 			conflict = make([]string, len(portalPagePrimaryKeyColumns))
 			copy(conflict, portalPagePrimaryKeyColumns)
 		}
-		cache.query = buildUpsertQueryPostgres(dialect, "\"portal_link\".\"portal_pages\"", updateOnConflict, ret, update, conflict, insert, opts...)
+		cache.query = buildUpsertQueryPostgres(dialect, "\"portal_pages\"", updateOnConflict, ret, update, conflict, insert, opts...)
 
 		cache.valueMapping, err = queries.BindMapping(portalPageType, portalPageMapping, insert)
 		if err != nil {
@@ -850,7 +850,7 @@ func (o *PortalPage) Delete(ctx context.Context, exec boil.ContextExecutor) (int
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), portalPagePrimaryKeyMapping)
-	sql := "DELETE FROM \"portal_link\".\"portal_pages\" WHERE \"id\"=$1"
+	sql := "DELETE FROM \"portal_pages\" WHERE \"id\"=$1"
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -915,7 +915,7 @@ func (o PortalPageSlice) DeleteAll(ctx context.Context, exec boil.ContextExecuto
 		args = append(args, pkeyArgs...)
 	}
 
-	sql := "DELETE FROM \"portal_link\".\"portal_pages\" WHERE " +
+	sql := "DELETE FROM \"portal_pages\" WHERE " +
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, portalPagePrimaryKeyColumns, len(o))
 
 	if boil.IsDebug(ctx) {
@@ -970,7 +970,7 @@ func (o *PortalPageSlice) ReloadAll(ctx context.Context, exec boil.ContextExecut
 		args = append(args, pkeyArgs...)
 	}
 
-	sql := "SELECT \"portal_link\".\"portal_pages\".* FROM \"portal_link\".\"portal_pages\" WHERE " +
+	sql := "SELECT \"portal_pages\".* FROM \"portal_pages\" WHERE " +
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, portalPagePrimaryKeyColumns, len(*o))
 
 	q := queries.Raw(sql, args...)
@@ -988,7 +988,7 @@ func (o *PortalPageSlice) ReloadAll(ctx context.Context, exec boil.ContextExecut
 // PortalPageExists checks if the PortalPage row exists.
 func PortalPageExists(ctx context.Context, exec boil.ContextExecutor, iD int) (bool, error) {
 	var exists bool
-	sql := "select exists(select 1 from \"portal_link\".\"portal_pages\" where \"id\"=$1 limit 1)"
+	sql := "select exists(select 1 from \"portal_pages\" where \"id\"=$1 limit 1)"
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)

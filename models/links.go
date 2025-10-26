@@ -215,15 +215,15 @@ var LinkWhere = struct {
 	CreatedAt    whereHelpernull_Time
 	UpdatedAt    whereHelpernull_Time
 }{
-	ID:           whereHelperint{field: "\"portal_link\".\"links\".\"id\""},
-	PortalPageID: whereHelperint{field: "\"portal_link\".\"links\".\"portal_page_id\""},
-	Title:        whereHelperstring{field: "\"portal_link\".\"links\".\"title\""},
-	URL:          whereHelperstring{field: "\"portal_link\".\"links\".\"url\""},
-	Description:  whereHelpernull_String{field: "\"portal_link\".\"links\".\"description\""},
-	IconURL:      whereHelpernull_String{field: "\"portal_link\".\"links\".\"icon_url\""},
-	DisplayOrder: whereHelperint{field: "\"portal_link\".\"links\".\"display_order\""},
-	CreatedAt:    whereHelpernull_Time{field: "\"portal_link\".\"links\".\"created_at\""},
-	UpdatedAt:    whereHelpernull_Time{field: "\"portal_link\".\"links\".\"updated_at\""},
+	ID:           whereHelperint{field: "\"links\".\"id\""},
+	PortalPageID: whereHelperint{field: "\"links\".\"portal_page_id\""},
+	Title:        whereHelperstring{field: "\"links\".\"title\""},
+	URL:          whereHelperstring{field: "\"links\".\"url\""},
+	Description:  whereHelpernull_String{field: "\"links\".\"description\""},
+	IconURL:      whereHelpernull_String{field: "\"links\".\"icon_url\""},
+	DisplayOrder: whereHelperint{field: "\"links\".\"display_order\""},
+	CreatedAt:    whereHelpernull_Time{field: "\"links\".\"created_at\""},
+	UpdatedAt:    whereHelpernull_Time{field: "\"links\".\"updated_at\""},
 }
 
 // LinkRels is where relationship names are stored.
@@ -557,10 +557,10 @@ func (q linkQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bool,
 
 // Links retrieves all the records using an executor.
 func Links(mods ...qm.QueryMod) linkQuery {
-	mods = append(mods, qm.From("\"portal_link\".\"links\""))
+	mods = append(mods, qm.From("\"links\""))
 	q := NewQuery(mods...)
 	if len(queries.GetSelect(q)) == 0 {
-		queries.SetSelect(q, []string{"\"portal_link\".\"links\".*"})
+		queries.SetSelect(q, []string{"\"links\".*"})
 	}
 
 	return linkQuery{q}
@@ -576,7 +576,7 @@ func FindLink(ctx context.Context, exec boil.ContextExecutor, iD int, selectCols
 		sel = strings.Join(strmangle.IdentQuoteSlice(dialect.LQ, dialect.RQ, selectCols), ",")
 	}
 	query := fmt.Sprintf(
-		"select %s from \"portal_link\".\"links\" where \"id\"=$1", sel,
+		"select %s from \"links\" where \"id\"=$1", sel,
 	)
 
 	q := queries.Raw(query, iD)
@@ -643,9 +643,9 @@ func (o *Link) Insert(ctx context.Context, exec boil.ContextExecutor, columns bo
 			return err
 		}
 		if len(wl) != 0 {
-			cache.query = fmt.Sprintf("INSERT INTO \"portal_link\".\"links\" (\"%s\") %%sVALUES (%s)%%s", strings.Join(wl, "\",\""), strmangle.Placeholders(dialect.UseIndexPlaceholders, len(wl), 1, 1))
+			cache.query = fmt.Sprintf("INSERT INTO \"links\" (\"%s\") %%sVALUES (%s)%%s", strings.Join(wl, "\",\""), strmangle.Placeholders(dialect.UseIndexPlaceholders, len(wl), 1, 1))
 		} else {
-			cache.query = "INSERT INTO \"portal_link\".\"links\" %sDEFAULT VALUES%s"
+			cache.query = "INSERT INTO \"links\" %sDEFAULT VALUES%s"
 		}
 
 		var queryOutput, queryReturning string
@@ -717,7 +717,7 @@ func (o *Link) Update(ctx context.Context, exec boil.ContextExecutor, columns bo
 			return 0, errors.New("models: unable to update links, could not build whitelist")
 		}
 
-		cache.query = fmt.Sprintf("UPDATE \"portal_link\".\"links\" SET %s WHERE %s",
+		cache.query = fmt.Sprintf("UPDATE \"links\" SET %s WHERE %s",
 			strmangle.SetParamNames("\"", "\"", 1, wl),
 			strmangle.WhereClause("\"", "\"", len(wl)+1, linkPrimaryKeyColumns),
 		)
@@ -798,7 +798,7 @@ func (o LinkSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, col
 		args = append(args, pkeyArgs...)
 	}
 
-	sql := fmt.Sprintf("UPDATE \"portal_link\".\"links\" SET %s WHERE %s",
+	sql := fmt.Sprintf("UPDATE \"links\" SET %s WHERE %s",
 		strmangle.SetParamNames("\"", "\"", 1, colNames),
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), len(colNames)+1, linkPrimaryKeyColumns, len(o)))
 
@@ -902,7 +902,7 @@ func (o *Link) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnCo
 			conflict = make([]string, len(linkPrimaryKeyColumns))
 			copy(conflict, linkPrimaryKeyColumns)
 		}
-		cache.query = buildUpsertQueryPostgres(dialect, "\"portal_link\".\"links\"", updateOnConflict, ret, update, conflict, insert, opts...)
+		cache.query = buildUpsertQueryPostgres(dialect, "\"links\"", updateOnConflict, ret, update, conflict, insert, opts...)
 
 		cache.valueMapping, err = queries.BindMapping(linkType, linkMapping, insert)
 		if err != nil {
@@ -961,7 +961,7 @@ func (o *Link) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, er
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), linkPrimaryKeyMapping)
-	sql := "DELETE FROM \"portal_link\".\"links\" WHERE \"id\"=$1"
+	sql := "DELETE FROM \"links\" WHERE \"id\"=$1"
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -1026,7 +1026,7 @@ func (o LinkSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (in
 		args = append(args, pkeyArgs...)
 	}
 
-	sql := "DELETE FROM \"portal_link\".\"links\" WHERE " +
+	sql := "DELETE FROM \"links\" WHERE " +
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, linkPrimaryKeyColumns, len(o))
 
 	if boil.IsDebug(ctx) {
@@ -1081,7 +1081,7 @@ func (o *LinkSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) er
 		args = append(args, pkeyArgs...)
 	}
 
-	sql := "SELECT \"portal_link\".\"links\".* FROM \"portal_link\".\"links\" WHERE " +
+	sql := "SELECT \"links\".* FROM \"links\" WHERE " +
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, linkPrimaryKeyColumns, len(*o))
 
 	q := queries.Raw(sql, args...)
@@ -1099,7 +1099,7 @@ func (o *LinkSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) er
 // LinkExists checks if the Link row exists.
 func LinkExists(ctx context.Context, exec boil.ContextExecutor, iD int) (bool, error) {
 	var exists bool
-	sql := "select exists(select 1 from \"portal_link\".\"links\" where \"id\"=$1 limit 1)"
+	sql := "select exists(select 1 from \"links\" where \"id\"=$1 limit 1)"
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
