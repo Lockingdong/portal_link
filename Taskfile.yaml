@@ -9,12 +9,12 @@ tasks:
   migrate-up:
     desc: "Run database migrations"
     cmds:
-      - goose -dir migrations postgres "host=localhost port=5432 user=postgres password=postgres dbname=portal_link sslmode=disable search_path=portal_link" up
+      - goose -dir migrations postgres "host=localhost port=5432 user=postgres password=postgres dbname=portal_link sslmode=disable search_path=public" up
   migrate-down:
     desc: "Rollback database migrations"
     cmds:
-      - goose -dir migrations postgres "host=localhost port=5432 user=postgres password=postgres dbname=portal_link sslmode=disable search_path=portal_link" down
-  
+      - goose -dir migrations postgres "host=localhost port=5432 user=postgres password=postgres dbname=portal_link sslmode=disable search_path=public" down
+
   # generate sqlboiler models
   generate-models:
     desc: "Generate sqlboiler models"
