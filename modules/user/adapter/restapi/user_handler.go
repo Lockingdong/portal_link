@@ -18,6 +18,21 @@ type UserHandler struct {
 	signInUC *usecase.SignInUC
 }
 
+// NewInMemUserHandler 建立新的用戶處理器 (in-memory version)
+func NewInMemUserHandler(e *gin.Engine, userRepo domain.UserRepository) error {
+	handler := &UserHandler{
+		signUpUC: usecase.NewSignUpUC(userRepo),
+		signInUC: usecase.NewSignInUC(userRepo),
+	}
+
+	router := e.Group("/api/v1/user")
+	{
+		router.POST("/signup", handler.SignUp)
+		router.POST("/signin", handler.SignIn)
+	}
+	return nil
+}
+
 // NewUserHandler 建立新的用戶處理器
 func NewUserHandler(e *gin.Engine, db *sql.DB) error {
 	userRepo := repository.NewUserRepository(db)

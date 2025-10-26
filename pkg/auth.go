@@ -13,7 +13,7 @@ import (
 	"strings"
 	"time"
 
-	"portal_link/models"
+	"portal_link/modules/user/domain"
 
 	"github.com/gin-gonic/gin"
 )
@@ -64,7 +64,7 @@ func GenerateAccessToken(userID string) (string, error) {
 }
 
 // ValidateAccessToken 驗證 access token 的有效性，並檢查使用者是否存在
-func ValidateAccessToken(ctx context.Context, token string, db *sql.DB) (string, error) {
+func ValidateAccessToken(ctx context.Context, token string, userRepo domain.UserRepository) (string, error) {
 	// TODO: 實作 token 黑名單機制，支援 token 撤銷功能
 	// TODO: 加入 token 使用紀錄，以便追蹤可疑活動
 	// TODO: 實作 rate limiting 機制防止暴力破解
@@ -93,9 +93,12 @@ func ValidateAccessToken(ctx context.Context, token string, db *sql.DB) (string,
 	}
 
 	// 檢查使用者是否存在於資料庫中
-	_, err = models.FindUser(ctx, db, userID)
+	_, err = userRepo.Find(ctx, userID)
 	if err != nil {
-		log.Printf("User not found in database: %v", err)
+		if errors.Is(err, sql.ErrNoRows) {
+			return "", ErrUserNotFound
+		}
+		log.Printf("Error finding user: %v", err)
 		return "", ErrUserNotFound
 	}
 
@@ -103,7 +106,7 @@ func ValidateAccessToken(ctx context.Context, token string, db *sql.DB) (string,
 }
 
 // AuthMiddleware Gin 框架的身份驗證中間件
-func AuthMiddleware(db *sql.DB) gin.HandlerFunc {
+func AuthMiddleware(userRepo domain.UserRepository) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// TODO: 支援多種身份驗證方式（如 API Key、OAuth 等）
 		// TODO: 加入請求來源驗證（CORS 設定）
@@ -130,7 +133,7 @@ func AuthMiddleware(db *sql.DB) gin.HandlerFunc {
 		}
 
 		// 驗證 token 並檢查使用者是否存在
-		userID, err := ValidateAccessToken(c.Request.Context(), parts[1], db)
+		userID, err := ValidateAccessToken(c.Request.Context(), parts[1], userRepo)
 		if err != nil {
 			log.Println("ValidateAccessToken error:", err)
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
