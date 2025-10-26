@@ -46,7 +46,7 @@
 
 - 密碼暫時以明文方式比對
   - **TODO:** 後續討論密碼加密方式（如 bcrypt）
-- 登入失敗時不透露具體原因（使用者不存在 or 密碼錯誤），統一返回 `ErrInvalidCredentials` 以提高安全性
+- 登入失敗時不透露具體原因（使用者不存在 or 密碼錯誤），統一返回 `ErrInvalidCredentials`
 - Access token 產生方式：請參考 [Authentication](../../../auth.md)
 
 ## 相關物件
