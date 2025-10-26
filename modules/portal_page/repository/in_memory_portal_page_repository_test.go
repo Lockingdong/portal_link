@@ -140,7 +140,7 @@ func TestInMemoryPortalPageRepository_Create(t *testing.T) {
 				Links:     []*domain.Link{},
 			},
 			wantErr: true,
-			errMsg:  "duplicate key",
+			errMsg:  "already exists",
 		},
 		{
 			name: "成功建立沒有時間戳記的 PortalPage - 應自動設定",

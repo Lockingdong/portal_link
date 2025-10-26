@@ -42,7 +42,7 @@ func (r *InMemoryPortalPageRepository) Create(ctx context.Context, portalPage *d
 
 	// Check if slug already exists
 	if _, exists := r.slugIndex[portalPage.Slug]; exists {
-		return fmt.Errorf("duplicate key value violates unique constraint \"portal_pages_slug_key\"")
+		return fmt.Errorf("portal page with slug '%s' already exists", portalPage.Slug)
 	}
 
 	// Create a deep copy to avoid reference issues
@@ -110,7 +110,7 @@ func (r *InMemoryPortalPageRepository) Update(ctx context.Context, portalPage *d
 	// Check slug uniqueness (only if slug has changed)
 	if existing.Slug != portalPage.Slug {
 		if existingID, slugExists := r.slugIndex[portalPage.Slug]; slugExists && existingID != portalPage.ID {
-			return fmt.Errorf("duplicate key value violates unique constraint \"portal_pages_slug_key\"")
+			return fmt.Errorf("portal page with slug '%s' already exists", portalPage.Slug)
 		}
 	}
 
