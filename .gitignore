@@ -1,5 +1,4 @@
 # Environment variables (contains sensitive information)
-.env
 venv
 
 # IDE
