@@ -10,7 +10,7 @@
 - Token 有效期：產生後 1 天內有效
 - 驗證機制：
   - 驗證 token 格式和過期時間
-  - **檢查使用者是否存在於資料庫中**，確保已刪除的使用者無法使用舊 token
+  - **檢查使用者是否存在**，確保已刪除的使用者無法使用舊 token
 
 ### 未來優化計畫（TODO）
 
@@ -44,16 +44,16 @@ func GenerateAccessToken(userID string) (string, error)
 
 ### ValidateAccessToken
 
-驗證 access token 的有效性，並確認使用者是否存在於資料庫中。
+驗證 access token 的有效性，並確認使用者是否存在。
 
 ```go
-func ValidateAccessToken(ctx context.Context, token string, db *sql.DB) (string, error)
+func ValidateAccessToken(ctx context.Context, token string, userRepo domain.UserRepository) (string, error)
 ```
 
 **參數：**
 - `ctx`: 上下文
 - `token`: 要驗證的 access token
-- `db`: 資料庫連接，用於檢查使用者是否存在
+- `userRepo`: 使用者 repository，用於檢查使用者是否存在
 
 **回傳：**
 - `string`: token 對應的使用者 ID（字串格式）
@@ -63,7 +63,7 @@ func ValidateAccessToken(ctx context.Context, token string, db *sql.DB) (string,
 1. 解碼 base64 token
 2. 解析出使用者 ID 和過期時間
 3. 檢查是否已過期
-4. **透過 SQLBoiler 的 FindUser 檢查使用者是否存在於資料庫中**
+4. **透過 repository 檢查使用者是否存在**
 5. 回傳使用者 ID
 
 **錯誤類型：**
@@ -77,24 +77,24 @@ func ValidateAccessToken(ctx context.Context, token string, db *sql.DB) (string,
 Gin 框架的身份驗證中間件，用於保護需要登入的 API 端點。
 
 ```go
-func AuthMiddleware(db *sql.DB) gin.HandlerFunc
+func AuthMiddleware(userRepo domain.UserRepository) gin.HandlerFunc
 ```
 
 **參數：**
-- `db`: 資料庫連接，用於檢查使用者是否存在
+- `userRepo`: 使用者 repository，用於檢查使用者是否存在
 
 **功能：**
 - 從請求標頭獲取並驗證 access token
-- 透過 SQLBoiler 檢查使用者是否存在於資料庫中
+- 透過 repository 檢查使用者是否存在
 - 將驗證後的使用者 ID 存入 context
 - 處理驗證失敗的情況
 
 **使用方式：**
 ```go
 router := gin.Default()
-router.Use(AuthMiddleware(db)) // 全域使用
+router.Use(AuthMiddleware(userRepo)) // 全域使用
 // 或
-router.GET("/protected", AuthMiddleware(db), handleProtected) // 單一路由使用
+router.GET("/protected", AuthMiddleware(userRepo), handleProtected) // 單一路由使用
 ```
 
 **處理流程：**
@@ -147,4 +147,4 @@ func handleProtected(c *gin.Context) {
 - token 過期或無效會返回 401 Unauthorized
 - 使用者不存在（已被刪除）會返回 401 Unauthorized
 - Context 中找不到使用者 ID 會返回 500 Internal Server Error
-- **安全性：** 系統會檢查使用者是否存在於資料庫中，已刪除的使用者無法使用舊 token
+- **安全性：** 系統會檢查使用者是否存在，已刪除的使用者無法使用舊 token
