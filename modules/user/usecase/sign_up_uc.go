@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"portal_link/modules/user/domain"
-	"portal_link/pkg"
+	"portal_link/pkg/auth"
 	"regexp"
 
 	"github.com/cockroachdb/errors"
@@ -65,7 +65,7 @@ func (s *SignUpUC) Execute(ctx context.Context, signUpParams *SignUpParams) (*Si
 
 	// 5. 產生該 User 的 access_token
 	UserID := fmt.Sprintf("%d", user.ID)
-	accessToken, err := pkg.GenerateAccessToken(UserID)
+	accessToken, err := auth.GenerateAccessToken(UserID)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to generate access token")
 	}

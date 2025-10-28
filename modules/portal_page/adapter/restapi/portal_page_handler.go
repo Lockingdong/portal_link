@@ -8,7 +8,7 @@ import (
 	"portal_link/modules/portal_page/repository"
 	"portal_link/modules/portal_page/usecase"
 	user_domain "portal_link/modules/user/domain"
-	"portal_link/pkg"
+	"portal_link/pkg/auth"
 	"portal_link/pkg/http_error"
 	"strconv"
 
@@ -35,10 +35,10 @@ func NewPortalPageHandler(e *gin.Engine, db *sql.DB, userRepo user_domain.UserRe
 		findBySlugUC:       usecase.NewFindPortalPageBySlugUC(portalPageRepo),
 	}
 
-	e.GET("/api/v1/me/portal-pages", pkg.AuthMiddleware(userRepo), handler.ListPortalPages)
-	e.GET("/api/v1/me/portal-pages/:id", pkg.AuthMiddleware(userRepo), handler.FindPortalPageByID)
-	e.POST("/api/v1/me/portal-pages", pkg.AuthMiddleware(userRepo), handler.CreatePortalPage)
-	e.PUT("/api/v1/me/portal-pages/:id", pkg.AuthMiddleware(userRepo), handler.UpdatePortalPage)
+	e.GET("/api/v1/me/portal-pages", auth.AuthMiddleware(userRepo), handler.ListPortalPages)
+	e.GET("/api/v1/me/portal-pages/:id", auth.AuthMiddleware(userRepo), handler.FindPortalPageByID)
+	e.POST("/api/v1/me/portal-pages", auth.AuthMiddleware(userRepo), handler.CreatePortalPage)
+	e.PUT("/api/v1/me/portal-pages/:id", auth.AuthMiddleware(userRepo), handler.UpdatePortalPage)
 
 	// Public endpoint: find portal page by slug (no auth)
 	e.GET("/api/v1/portal-pages/:slug", handler.FindPortalPageBySlug)
@@ -57,10 +57,10 @@ func NewInMemPortalPageHandler(e *gin.Engine, userRepo user_domain.UserRepositor
 		findBySlugUC:       usecase.NewFindPortalPageBySlugUC(portalPageRepo),
 	}
 
-	e.GET("/api/v1/me/portal-pages", pkg.AuthMiddleware(userRepo), handler.ListPortalPages)
-	e.GET("/api/v1/me/portal-pages/:id", pkg.AuthMiddleware(userRepo), handler.FindPortalPageByID)
-	e.POST("/api/v1/me/portal-pages", pkg.AuthMiddleware(userRepo), handler.CreatePortalPage)
-	e.PUT("/api/v1/me/portal-pages/:id", pkg.AuthMiddleware(userRepo), handler.UpdatePortalPage)
+	e.GET("/api/v1/me/portal-pages", auth.AuthMiddleware(userRepo), handler.ListPortalPages)
+	e.GET("/api/v1/me/portal-pages/:id", auth.AuthMiddleware(userRepo), handler.FindPortalPageByID)
+	e.POST("/api/v1/me/portal-pages", auth.AuthMiddleware(userRepo), handler.CreatePortalPage)
+	e.PUT("/api/v1/me/portal-pages/:id", auth.AuthMiddleware(userRepo), handler.UpdatePortalPage)
 
 	// Public endpoint: find portal page by slug (no auth)
 	e.GET("/api/v1/portal-pages/:slug", handler.FindPortalPageBySlug)
@@ -71,7 +71,7 @@ func NewInMemPortalPageHandler(e *gin.Engine, userRepo user_domain.UserRepositor
 // CreatePortalPage 處理創建個人頁面請求
 func (h *PortalPageHandler) CreatePortalPage(c *gin.Context) {
 	// 取得已驗證的使用者 ID
-	userID, err := pkg.GetUserIDFromContext(c)
+	userID, err := auth.GetUserIDFromContext(c)
 	if err != nil {
 		http_error.ResponseInternalServerError(c, nil)
 		return
@@ -116,7 +116,7 @@ func (h *PortalPageHandler) CreatePortalPage(c *gin.Context) {
 // UpdatePortalPage 處理更新個人頁面請求
 func (h *PortalPageHandler) UpdatePortalPage(c *gin.Context) {
 	// 取得已驗證的使用者 ID
-	userID, err := pkg.GetUserIDFromContext(c)
+	userID, err := auth.GetUserIDFromContext(c)
 	if err != nil {
 		http_error.ResponseInternalServerError(c, nil)
 		return
@@ -190,7 +190,7 @@ func (h *PortalPageHandler) UpdatePortalPage(c *gin.Context) {
 // FindPortalPageByID 取得單一 Portal Page（含 Links）
 func (h *PortalPageHandler) FindPortalPageByID(c *gin.Context) {
 	// 取得已驗證的使用者 ID
-	userID, err := pkg.GetUserIDFromContext(c)
+	userID, err := auth.GetUserIDFromContext(c)
 	if err != nil {
 		http_error.ResponseInternalServerError(c, nil)
 		return
@@ -242,7 +242,7 @@ func (h *PortalPageHandler) FindPortalPageByID(c *gin.Context) {
 // ListPortalPages 處理列出個人頁面請求
 func (h *PortalPageHandler) ListPortalPages(c *gin.Context) {
 	// 取得已驗證的使用者 ID
-	userID, err := pkg.GetUserIDFromContext(c)
+	userID, err := auth.GetUserIDFromContext(c)
 	if err != nil {
 		http_error.ResponseInternalServerError(c, nil)
 		return

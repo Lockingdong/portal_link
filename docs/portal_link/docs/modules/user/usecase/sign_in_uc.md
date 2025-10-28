@@ -31,6 +31,45 @@
 5. 系統使用 `GenerateAccessToken` 方法產生該 User 的 access_token（詳見 [Authentication](../../../auth.md)）
 6. 系統返回 access_token
 
+## 時序圖
+
+```mermaid
+sequenceDiagram
+    participant Client as 客戶端
+    participant UC as SignInUC
+    participant Repo as UserRepository
+    participant Auth as AuthService
+
+    Client->>UC: Execute(email, password)
+    
+    Note over UC: 1. 驗證輸入參數
+    UC->>UC: validateParams()
+    alt 參數驗證失敗
+        UC-->>Client: ErrInvalidParams
+    end
+    
+    Note over UC,Repo: 2. 查詢使用者
+    UC->>Repo: GetByEmail(email)
+    alt 使用者不存在
+        Repo-->>UC: sql.ErrNoRows
+        UC-->>Client: ErrInvalidCredentials
+    end
+    Repo-->>UC: User
+    
+    Note over UC: 3. 驗證密碼
+    UC->>UC: 比對密碼（明文）
+    alt 密碼錯誤
+        UC-->>Client: ErrInvalidCredentials
+    end
+    
+    Note over UC,Auth: 4. 產生 Access Token
+    UC->>Auth: GenerateAccessToken(userID)
+    Auth-->>UC: accessToken
+    
+    Note over UC,Client: 5. 返回結果
+    UC-->>Client: SignInResult{accessToken}
+```
+
 ## 錯誤結果
 
 ### 輸入參數驗證失敗
