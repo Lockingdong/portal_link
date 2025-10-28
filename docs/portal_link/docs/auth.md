@@ -9,6 +9,7 @@
 - Token 格式：將使用者 ID 和過期時間 timestamp 進行 base64 編碼
 - Token 有效期：產生後 1 天內有效
 - 驗證機制：
+
   - 驗證 token 格式和過期時間
   - **檢查使用者是否存在**，確保已刪除的使用者無法使用舊 token
 
@@ -29,13 +30,16 @@ func GenerateAccessToken(userID string) (string, error)
 ```
 
 **參數：**
+
 - `userID`: 使用者 ID
 
 **回傳：**
+
 - `string`: 產生的 access token
 - `error`: 如果產生過程中發生錯誤則回傳錯誤
 
 **處理流程：**
+
 1. 取得當前時間
 2. 計算過期時間（當前時間 + 1 天）
 3. 組合使用者 ID 和過期時間
@@ -51,6 +55,7 @@ func ValidateAccessToken(ctx context.Context, token string, userRepo domain.User
 ```
 
 **參數：**
+
 - `ctx`: 上下文
 - `token`: 要驗證的 access token
 - `userRepo`: 使用者 repository，用於檢查使用者是否存在
@@ -60,6 +65,7 @@ func ValidateAccessToken(ctx context.Context, token string, userRepo domain.User
 - `error`: 如果驗證失敗則回傳錯誤
 
 **處理流程：**
+
 1. 解碼 base64 token
 2. 解析出使用者 ID 和過期時間
 3. 檢查是否已過期
@@ -67,6 +73,7 @@ func ValidateAccessToken(ctx context.Context, token string, userRepo domain.User
 5. 回傳使用者 ID
 
 **錯誤類型：**
+
 - `ErrInvalidToken`: token 格式不正確
 - `ErrExpiredToken`: token 已過期
 - `ErrInvalidUserID`: token 中的使用者 ID 格式無效
@@ -84,6 +91,7 @@ func AuthMiddleware(userRepo domain.UserRepository) gin.HandlerFunc
 - `userRepo`: 使用者 repository，用於檢查使用者是否存在
 
 **功能：**
+
 - 從請求標頭獲取並驗證 access token
 - 透過 repository 檢查使用者是否存在
 - 將驗證後的使用者 ID 存入 context
@@ -98,6 +106,7 @@ router.GET("/protected", AuthMiddleware(userRepo), handleProtected) // 單一路
 ```
 
 **處理流程：**
+
 1. 從 Authorization 標頭獲取 Bearer token
 2. 使用 ValidateAccessToken 驗證 token 並檢查使用者是否存在
 3. 如果驗證成功：
