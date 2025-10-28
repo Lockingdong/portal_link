@@ -7,6 +7,7 @@ import (
 	"portal_link/modules/portal_page/domain"
 	"portal_link/modules/portal_page/repository"
 	"portal_link/modules/portal_page/usecase"
+	user_domain "portal_link/modules/user/domain"
 	"portal_link/pkg"
 	"portal_link/pkg/http_error"
 	"strconv"
@@ -24,7 +25,7 @@ type PortalPageHandler struct {
 }
 
 // NewPortalPageHandler 建立新的個人頁面處理器
-func NewPortalPageHandler(e *gin.Engine, db *sql.DB) error {
+func NewPortalPageHandler(e *gin.Engine, db *sql.DB, userRepo user_domain.UserRepository) error {
 	portalPageRepo := repository.NewPortalPageRepository(db)
 	handler := &PortalPageHandler{
 		createPortalPageUC: usecase.NewCreatePortalPageUC(portalPageRepo),
@@ -34,10 +35,32 @@ func NewPortalPageHandler(e *gin.Engine, db *sql.DB) error {
 		findBySlugUC:       usecase.NewFindPortalPageBySlugUC(portalPageRepo),
 	}
 
-	e.GET("/api/v1/me/portal-pages", pkg.AuthMiddleware(db), handler.ListPortalPages)
-	e.GET("/api/v1/me/portal-pages/:id", pkg.AuthMiddleware(db), handler.FindPortalPageByID)
-	e.POST("/api/v1/me/portal-pages", pkg.AuthMiddleware(db), handler.CreatePortalPage)
-	e.PUT("/api/v1/me/portal-pages/:id", pkg.AuthMiddleware(db), handler.UpdatePortalPage)
+	e.GET("/api/v1/me/portal-pages", pkg.AuthMiddleware(userRepo), handler.ListPortalPages)
+	e.GET("/api/v1/me/portal-pages/:id", pkg.AuthMiddleware(userRepo), handler.FindPortalPageByID)
+	e.POST("/api/v1/me/portal-pages", pkg.AuthMiddleware(userRepo), handler.CreatePortalPage)
+	e.PUT("/api/v1/me/portal-pages/:id", pkg.AuthMiddleware(userRepo), handler.UpdatePortalPage)
+
+	// Public endpoint: find portal page by slug (no auth)
+	e.GET("/api/v1/portal-pages/:slug", handler.FindPortalPageBySlug)
+
+	return nil
+}
+
+// NewInMemPortalPageHandler 建立新的個人頁面處理器 (in-memory version)
+func NewInMemPortalPageHandler(e *gin.Engine, userRepo user_domain.UserRepository) error {
+	portalPageRepo := repository.NewInMemoryPortalPageRepository()
+	handler := &PortalPageHandler{
+		createPortalPageUC: usecase.NewCreatePortalPageUC(portalPageRepo),
+		updatePortalPageUC: usecase.NewUpdatePortalPageUC(portalPageRepo),
+		listPortalPagesUC:  usecase.NewListPortalPagesUC(portalPageRepo),
+		findByIDUC:         usecase.NewFindPortalPageByIDUC(portalPageRepo),
+		findBySlugUC:       usecase.NewFindPortalPageBySlugUC(portalPageRepo),
+	}
+
+	e.GET("/api/v1/me/portal-pages", pkg.AuthMiddleware(userRepo), handler.ListPortalPages)
+	e.GET("/api/v1/me/portal-pages/:id", pkg.AuthMiddleware(userRepo), handler.FindPortalPageByID)
+	e.POST("/api/v1/me/portal-pages", pkg.AuthMiddleware(userRepo), handler.CreatePortalPage)
+	e.PUT("/api/v1/me/portal-pages/:id", pkg.AuthMiddleware(userRepo), handler.UpdatePortalPage)
 
 	// Public endpoint: find portal page by slug (no auth)
 	e.GET("/api/v1/portal-pages/:slug", handler.FindPortalPageBySlug)

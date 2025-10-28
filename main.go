@@ -3,8 +3,8 @@ package main
 import (
 	"log"
 	portal_page_restapi "portal_link/modules/portal_page/adapter/restapi"
+	user_repository "portal_link/modules/user/repository"
 	user_restapi "portal_link/modules/user/adapter/restapi"
-	"portal_link/pkg"
 	"portal_link/pkg/config"
 
 	"github.com/gin-contrib/cors"
@@ -14,8 +14,6 @@ import (
 func main() {
 	// 初始化配置和資料庫連線
 	config.Init()
-	db := pkg.NewPG(config.GetDBConfig().DSN())
-	defer db.Close()
 
 	r := gin.Default()
 
@@ -28,10 +26,13 @@ func main() {
 		AllowCredentials: true,
 	}))
 
-	if err := user_restapi.NewUserHandler(r, db); err != nil {
+	// Create in-memory user repository (shared across all handlers)
+	userRepo := user_repository.NewInMemoryUserRepository()
+
+	if err := user_restapi.NewInMemUserHandler(r, userRepo); err != nil {
 		log.Fatal(err)
 	}
-	if err := portal_page_restapi.NewPortalPageHandler(r, db); err != nil {
+	if err := portal_page_restapi.NewInMemPortalPageHandler(r, userRepo); err != nil {
 		log.Fatal(err)
 	}
 
