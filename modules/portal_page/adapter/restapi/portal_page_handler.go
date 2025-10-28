@@ -26,7 +26,7 @@ type PortalPageHandler struct {
 
 // NewPortalPageHandler 建立新的個人頁面處理器
 func NewPortalPageHandler(e *gin.Engine, db *sql.DB, userRepo user_domain.UserRepository) error {
-	portalPageRepo := repository.NewPortalPageRepository(db)
+	portalPageRepo := repository.NewInMemoryPortalPageRepository()
 	handler := &PortalPageHandler{
 		createPortalPageUC: usecase.NewCreatePortalPageUC(portalPageRepo),
 		updatePortalPageUC: usecase.NewUpdatePortalPageUC(portalPageRepo),

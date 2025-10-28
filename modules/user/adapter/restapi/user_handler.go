@@ -35,7 +35,7 @@ func NewInMemUserHandler(e *gin.Engine, userRepo domain.UserRepository) error {
 
 // NewUserHandler 建立新的用戶處理器
 func NewUserHandler(e *gin.Engine, db *sql.DB) error {
-	userRepo := repository.NewUserRepository(db)
+	userRepo := repository.NewInMemoryUserRepository()
 	handler := &UserHandler{
 		signUpUC: usecase.NewSignUpUC(userRepo),
 		signInUC: usecase.NewSignInUC(userRepo),

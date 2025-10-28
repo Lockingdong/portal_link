@@ -3,18 +3,14 @@ package main
 import (
 	"log"
 	portal_page_restapi "portal_link/modules/portal_page/adapter/restapi"
-	user_repository "portal_link/modules/user/repository"
 	user_restapi "portal_link/modules/user/adapter/restapi"
-	"portal_link/pkg/config"
+	user_repository "portal_link/modules/user/repository"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	// 初始化配置和資料庫連線
-	config.Init()
-
 	r := gin.Default()
 
 	// 配置 CORS 中間件

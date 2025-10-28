@@ -11,13 +11,7 @@ import (
 )
 
 func TestUpdatePortalPageUC_Execute(t *testing.T) {
-	db := setupTestDB(t)
-	t.Cleanup(func() {
-		cleanupTestDB(t, db)
-		db.Close()
-	})
-
-	repo := repository.NewPortalPageRepository(db)
+	repo := repository.NewInMemoryPortalPageRepository()
 	ctx := context.Background()
 
 	tests := []struct {
@@ -190,7 +184,7 @@ func TestUpdatePortalPageUC_Execute(t *testing.T) {
 			setupData: func(t *testing.T) int {
 				page := domain.NewPortalPage(domain.PortalPageParams{
 					UserID:          1,
-					Slug:            "test-page",
+					Slug:            "test-page-2",
 					Title:           "Test Page",
 					Bio:             "Test Bio",
 					ProfileImageURL: "https://example.com/image.jpg",
@@ -212,7 +206,7 @@ func TestUpdatePortalPageUC_Execute(t *testing.T) {
 			setupData: func(t *testing.T) int {
 				page := domain.NewPortalPage(domain.PortalPageParams{
 					UserID:          1,
-					Slug:            "test-page",
+					Slug:            "test-page-3",
 					Title:           "Test Page",
 					Bio:             "Test Bio",
 					ProfileImageURL: "https://example.com/image.jpg",
@@ -234,7 +228,7 @@ func TestUpdatePortalPageUC_Execute(t *testing.T) {
 			setupData: func(t *testing.T) int {
 				page := domain.NewPortalPage(domain.PortalPageParams{
 					UserID:          1,
-					Slug:            "test-page",
+					Slug:            "test-page-4",
 					Title:           "Test Page",
 					Bio:             "Test Bio",
 					ProfileImageURL: "https://example.com/image.jpg",
@@ -256,7 +250,7 @@ func TestUpdatePortalPageUC_Execute(t *testing.T) {
 			setupData: func(t *testing.T) int {
 				page := domain.NewPortalPage(domain.PortalPageParams{
 					UserID:          1,
-					Slug:            "test-page",
+					Slug:            "test-page-5",
 					Title:           "Test Page",
 					Bio:             "Test Bio",
 					ProfileImageURL: "https://example.com/image.jpg",
@@ -278,7 +272,7 @@ func TestUpdatePortalPageUC_Execute(t *testing.T) {
 			setupData: func(t *testing.T) int {
 				page := domain.NewPortalPage(domain.PortalPageParams{
 					UserID:          1,
-					Slug:            "test-page",
+					Slug:            "test-page-6",
 					Title:           "Test Page",
 					Bio:             "Test Bio",
 					ProfileImageURL: "https://example.com/image.jpg",
@@ -363,7 +357,7 @@ func TestUpdatePortalPageUC_Execute(t *testing.T) {
 			setupData: func(t *testing.T) int {
 				page := domain.NewPortalPage(domain.PortalPageParams{
 					UserID:          1,
-					Slug:            "test-page",
+					Slug:            "test-page-7",
 					Title:           "Test Page",
 					Bio:             "Test Bio",
 					ProfileImageURL: "https://example.com/image.jpg",
@@ -391,7 +385,7 @@ func TestUpdatePortalPageUC_Execute(t *testing.T) {
 			setupData: func(t *testing.T) int {
 				page := domain.NewPortalPage(domain.PortalPageParams{
 					UserID:          1,
-					Slug:            "test-page",
+					Slug:            "test-page-8",
 					Title:           "Test Page",
 					Bio:             "Test Bio",
 					ProfileImageURL: "https://example.com/image.jpg",
@@ -413,7 +407,7 @@ func TestUpdatePortalPageUC_Execute(t *testing.T) {
 			setupData: func(t *testing.T) int {
 				page := domain.NewPortalPage(domain.PortalPageParams{
 					UserID:          1,
-					Slug:            "test-page",
+					Slug:            "test-page-9",
 					Title:           "Test Page",
 					Bio:             "Test Bio",
 					ProfileImageURL: "https://example.com/image.jpg",
@@ -435,7 +429,7 @@ func TestUpdatePortalPageUC_Execute(t *testing.T) {
 			setupData: func(t *testing.T) int {
 				page := domain.NewPortalPage(domain.PortalPageParams{
 					UserID:          1,
-					Slug:            "test-page",
+					Slug:            "test-page-10",
 					Title:           "Test Page",
 					Bio:             "Test Bio",
 					ProfileImageURL: "https://example.com/image.jpg",
@@ -457,7 +451,7 @@ func TestUpdatePortalPageUC_Execute(t *testing.T) {
 			setupData: func(t *testing.T) int {
 				page := domain.NewPortalPage(domain.PortalPageParams{
 					UserID:          1,
-					Slug:            "test-page",
+					Slug:            "test-page-11",
 					Title:           "Test Page",
 					Bio:             "Test Bio",
 					ProfileImageURL: "https://example.com/image.jpg",
@@ -479,7 +473,7 @@ func TestUpdatePortalPageUC_Execute(t *testing.T) {
 			setupData: func(t *testing.T) int {
 				page := domain.NewPortalPage(domain.PortalPageParams{
 					UserID:          1,
-					Slug:            "test-page",
+					Slug:            "test-page-12",
 					Title:           "Test Page",
 					Bio:             "Test Bio",
 					ProfileImageURL: "https://example.com/image.jpg",
@@ -507,7 +501,7 @@ func TestUpdatePortalPageUC_Execute(t *testing.T) {
 			setupData: func(t *testing.T) int {
 				page := domain.NewPortalPage(domain.PortalPageParams{
 					UserID:          1,
-					Slug:            "test-page",
+					Slug:            "test-page-13",
 					Title:           "Test Page",
 					Bio:             "Test Bio",
 					ProfileImageURL: "https://example.com/image.jpg",
@@ -535,7 +529,7 @@ func TestUpdatePortalPageUC_Execute(t *testing.T) {
 			setupData: func(t *testing.T) int {
 				page := domain.NewPortalPage(domain.PortalPageParams{
 					UserID:          1,
-					Slug:            "test-page",
+					Slug:            "test-page-14",
 					Title:           "Test Page",
 					Bio:             "Test Bio",
 					ProfileImageURL: "https://example.com/image.jpg",
@@ -563,7 +557,7 @@ func TestUpdatePortalPageUC_Execute(t *testing.T) {
 			setupData: func(t *testing.T) int {
 				page := domain.NewPortalPage(domain.PortalPageParams{
 					UserID:          1,
-					Slug:            "test-page",
+					Slug:            "test-page-15",
 					Title:           "Test Page",
 					Bio:             "Test Bio",
 					ProfileImageURL: "https://example.com/image.jpg",
@@ -592,7 +586,7 @@ func TestUpdatePortalPageUC_Execute(t *testing.T) {
 			setupData: func(t *testing.T) int {
 				page := domain.NewPortalPage(domain.PortalPageParams{
 					UserID:          1,
-					Slug:            "test-page",
+					Slug:            "test-page-16",
 					Title:           "Test Page",
 					Bio:             "Test Bio",
 					ProfileImageURL: "https://example.com/image.jpg",
@@ -621,7 +615,7 @@ func TestUpdatePortalPageUC_Execute(t *testing.T) {
 			setupData: func(t *testing.T) int {
 				page := domain.NewPortalPage(domain.PortalPageParams{
 					UserID:          1,
-					Slug:            "test-page",
+					Slug:            "test-page-17",
 					Title:           "Test Page",
 					Bio:             "Test Bio",
 					ProfileImageURL: "https://example.com/image.jpg",
@@ -649,7 +643,7 @@ func TestUpdatePortalPageUC_Execute(t *testing.T) {
 			setupData: func(t *testing.T) int {
 				page := domain.NewPortalPage(domain.PortalPageParams{
 					UserID:          1,
-					Slug:            "test-page",
+					Slug:            "test-page-18",
 					Title:           "Test Page",
 					Bio:             "Test Bio",
 					ProfileImageURL: "https://example.com/image.jpg",
@@ -676,9 +670,6 @@ func TestUpdatePortalPageUC_Execute(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// 每個測試前清理數據庫
-			cleanupTestDB(t, db)
-
 			// 準備測試數據，獲取創建的 Portal Page ID
 			var portalPageID int
 			if tt.setupData != nil {

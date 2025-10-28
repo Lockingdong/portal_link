@@ -2,60 +2,16 @@ package usecase
 
 import (
 	"context"
-	"database/sql"
 	"portal_link/modules/portal_page/domain"
 	"portal_link/modules/portal_page/repository"
-	"portal_link/pkg"
-	"portal_link/pkg/config"
 	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
-// setupTestDB 設置測試數據庫連接
-func setupTestDB(t *testing.T) *sql.DB {
-	t.Helper()
-	config.Init()
-
-	// 使用 config 獲取資料庫連接
-	db := pkg.NewPG(config.GetDBConfig().DSN())
-
-	if err := db.Ping(); err != nil {
-		t.Fatalf("failed to ping test database: %v", err)
-	}
-
-	return db
-}
-
-// cleanupTestDB 清理測試數據
-func cleanupTestDB(t *testing.T, db *sql.DB) {
-	t.Helper()
-	// 先刪除 links
-	_, err := db.Exec("DELETE FROM portal_link.links")
-	if err != nil {
-		t.Logf("failed to cleanup links: %v", err)
-	}
-	// 再刪除 portal_pages
-	_, err = db.Exec("DELETE FROM portal_link.portal_pages")
-	if err != nil {
-		t.Logf("failed to cleanup portal_pages: %v", err)
-	}
-	// 清理 users
-	_, err = db.Exec("DELETE FROM portal_link.users")
-	if err != nil {
-		t.Logf("failed to cleanup users: %v", err)
-	}
-}
-
 func TestCreatePortalPageUC_Execute(t *testing.T) {
-	db := setupTestDB(t)
-	t.Cleanup(func() {
-		cleanupTestDB(t, db)
-		db.Close()
-	})
-
-	repo := repository.NewPortalPageRepository(db)
+	repo := repository.NewInMemoryPortalPageRepository()
 	ctx := context.Background()
 
 	tests := []struct {
@@ -269,9 +225,6 @@ func TestCreatePortalPageUC_Execute(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// 每個測試前清理數據庫
-			cleanupTestDB(t, db)
-
 			// 準備測試數據
 			if tt.setupData != nil {
 				tt.setupData(t)

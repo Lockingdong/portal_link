@@ -11,13 +11,7 @@ import (
 )
 
 func TestSignInUC_Execute(t *testing.T) {
-	db := setupTestDB(t)
-	t.Cleanup(func() {
-		cleanupTestDB(t, db)
-		db.Close()
-	})
-
-	repo := repository.NewUserRepository(db)
+	repo := repository.NewInMemoryUserRepository()
 	ctx := context.Background()
 
 	// 準備一個測試用戶
@@ -161,9 +155,6 @@ func TestSignInUC_Execute(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// 每個測試前清理數據庫
-			cleanupTestDB(t, db)
-
 			// 準備測試數據
 			if tt.setupData != nil {
 				tt.setupData(t)

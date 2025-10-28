@@ -10,13 +10,7 @@ import (
 )
 
 func TestFindPortalPageByIDUC_Execute(t *testing.T) {
-	db := setupTestDB(t)
-	t.Cleanup(func() {
-		cleanupTestDB(t, db)
-		db.Close()
-	})
-
-	repo := repository.NewPortalPageRepository(db)
+	repo := repository.NewInMemoryPortalPageRepository()
 	ctx := context.Background()
 
 	tests := []struct {
@@ -126,9 +120,6 @@ func TestFindPortalPageByIDUC_Execute(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// 每個測試前清理數據庫
-			cleanupTestDB(t, db)
-
 			// 準備資料，獲取 ID
 			var pageID int
 			if tt.setupData != nil {
