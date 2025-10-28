@@ -53,6 +53,7 @@
     - 驗證 profile_image_url 格式（如有更新）
     - 驗證 theme 為有效值（如有更新）
     - 驗證 links 陣列（必填）
+
         - 驗證 title 長度
         - 驗證 URL 格式
         - 驗證 description 長度
@@ -94,7 +95,7 @@
 ### 輸入參數驗證失敗
 
 - 系統返回錯誤 `ErrInvalidParams`
-- Portal Page 欄位驗證規則請參考 [Create Portal Page Use Case](create_portal_page_uc.md#輸入參數驗證失敗)
+- Portal Page 欄位驗證規則請參考 [Create Portal Page Use Case](create_portal_page_uc.md)
 - Link 欄位錯誤情境：
     - link title 為空或長度超過限制
     - link URL 格式錯誤
@@ -146,7 +147,7 @@
 
 ### Slug 規則
 
-請參考 [Create Portal Page Use Case](create_portal_page_uc.md#slug-規則) 的 Slug 規則。
+請參考 [Create Portal Page Use Case](create_portal_page_uc.md) 的 Slug 規則。
 唯一的差異是在檢查 slug 唯一性時，需要排除當前頁面本身。
 
 ### 驗證優先順序
