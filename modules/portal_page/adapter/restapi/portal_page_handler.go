@@ -1,7 +1,6 @@
 package restapi
 
 import (
-	"database/sql"
 	"errors"
 	"net/http"
 	"portal_link/modules/portal_page/domain"
@@ -22,28 +21,6 @@ type PortalPageHandler struct {
 	listPortalPagesUC  *usecase.ListPortalPagesUC
 	findByIDUC         *usecase.FindPortalPageByIDUC
 	findBySlugUC       *usecase.FindPortalPageBySlugUC
-}
-
-// NewPortalPageHandler 建立新的個人頁面處理器
-func NewPortalPageHandler(e *gin.Engine, db *sql.DB, userRepo user_domain.UserRepository) error {
-	portalPageRepo := repository.NewInMemoryPortalPageRepository()
-	handler := &PortalPageHandler{
-		createPortalPageUC: usecase.NewCreatePortalPageUC(portalPageRepo),
-		updatePortalPageUC: usecase.NewUpdatePortalPageUC(portalPageRepo),
-		listPortalPagesUC:  usecase.NewListPortalPagesUC(portalPageRepo),
-		findByIDUC:         usecase.NewFindPortalPageByIDUC(portalPageRepo),
-		findBySlugUC:       usecase.NewFindPortalPageBySlugUC(portalPageRepo),
-	}
-
-	e.GET("/api/v1/me/portal-pages", auth.AuthMiddleware(userRepo), handler.ListPortalPages)
-	e.GET("/api/v1/me/portal-pages/:id", auth.AuthMiddleware(userRepo), handler.FindPortalPageByID)
-	e.POST("/api/v1/me/portal-pages", auth.AuthMiddleware(userRepo), handler.CreatePortalPage)
-	e.PUT("/api/v1/me/portal-pages/:id", auth.AuthMiddleware(userRepo), handler.UpdatePortalPage)
-
-	// Public endpoint: find portal page by slug (no auth)
-	e.GET("/api/v1/portal-pages/:slug", handler.FindPortalPageBySlug)
-
-	return nil
 }
 
 // NewInMemPortalPageHandler 建立新的個人頁面處理器 (in-memory version)
