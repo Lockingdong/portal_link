@@ -26,13 +26,7 @@ Portal Page 作為聚合根，負責管理以下實體：
 
 - **Link**：Portal Page 中的連結項目（請參考 [link_entity](link_entity.md)）
 
-### 聚合邊界
-
-- Portal Page 是聚合的唯一進入點
-- 所有 Link 的新增、修改、刪除都必須透過 Portal Page 進行
-- 確保 Portal Page 與其內部 Links 的一致性狀態
-
-### 業務不變量
+### 業務規則
 
 - 一個 Portal Page 的 `slug` 在系統中必須是唯一的
 - Portal Page 必須屬於一個有效的使用者（User）
