@@ -40,15 +40,13 @@ func (s *SignInUC) Execute(ctx context.Context, signInParams *SignInParams) (*Si
 	// 2. 根據電子郵件地址查詢使用者
 	user, err := s.userRepository.GetByEmail(ctx, signInParams.Email)
 	if err != nil {
-		// 如果是找不到使用者，返回 ErrInvalidCredentials（不透露具體原因）
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, domain.ErrInvalidCredentials
 		}
-		// 其他錯誤直接返回
 		return nil, err
 	}
 
-	// 3. 驗證密碼是否正確（暫時以明文比對）
+	// 3. 驗證密碼是否正確（明文比對）
 	if user.Password != signInParams.Password {
 		return nil, domain.ErrInvalidCredentials
 	}
