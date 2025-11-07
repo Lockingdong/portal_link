@@ -32,8 +32,11 @@ go run main.go
 
 # 啟動 MkDocs 文檔服務
 cd docs/portal_link
-
 mkdocs serve
+
+# 生成靜態網站
+cd docs/portal_link
+mkdocs build
 ```
 
 ---
