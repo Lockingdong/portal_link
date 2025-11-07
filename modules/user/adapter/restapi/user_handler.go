@@ -15,14 +15,14 @@ import (
 // UserHandler 用戶處理器
 type UserHandler struct {
 	signUpUC *usecase.SignUpUC
-	signInUC *usecase.SignInUC
+	// signInUC *usecase.SignInUC
 }
 
 // NewInMemUserHandler 建立新的用戶處理器 (in-memory version)
 func NewInMemUserHandler(e *gin.Engine, userRepo domain.UserRepository) error {
 	handler := &UserHandler{
 		signUpUC: usecase.NewSignUpUC(userRepo),
-		signInUC: usecase.NewSignInUC(userRepo),
+		// signInUC: usecase.NewSignInUC(userRepo),
 	}
 
 	router := e.Group("/api/v1/user")
@@ -38,7 +38,7 @@ func NewUserHandler(e *gin.Engine, db *sql.DB) error {
 	userRepo := repository.NewInMemoryUserRepository()
 	handler := &UserHandler{
 		signUpUC: usecase.NewSignUpUC(userRepo),
-		signInUC: usecase.NewSignInUC(userRepo),
+		// signInUC: usecase.NewSignInUC(userRepo),
 	}
 
 	router := e.Group("/api/v1/user")
@@ -85,36 +85,36 @@ func (h *UserHandler) SignUp(c *gin.Context) {
 }
 
 // SignIn 處理用戶登入請求
-func (h *UserHandler) SignIn(c *gin.Context) {
-	var req usecase.SignInParams
+// func (h *UserHandler) SignIn(c *gin.Context) {
+// 	var req usecase.SignInParams
 
-	// 綁定並驗證請求體
-	if err := c.ShouldBindJSON(&req); err != nil {
-		http_error.ResponseBadRequest(c, nil)
-		return
-	}
+// 	// 綁定並驗證請求體
+// 	if err := c.ShouldBindJSON(&req); err != nil {
+// 		http_error.ResponseBadRequest(c, nil)
+// 		return
+// 	}
 
-	// 執行登入用例
-	result, err := h.signInUC.Execute(c.Request.Context(), &usecase.SignInParams{
-		Email:    req.Email,
-		Password: req.Password,
-	})
+// 	// 執行登入用例
+// 	result, err := h.signInUC.Execute(c.Request.Context(), &usecase.SignInParams{
+// 		Email:    req.Email,
+// 		Password: req.Password,
+// 	})
 
-	if err != nil {
-		if errors.Is(err, domain.ErrInvalidParams) || errors.Is(err, domain.ErrInvalidCredentials) {
-			http_error.ResponseBadRequest(c, &http_error.ErrorResponse{
-				Message: err.Error(),
-			})
-			return
-		}
-		http_error.ResponseInternalServerError(c, &http_error.ErrorResponse{
-			Message: err.Error(),
-		})
-		return
-	}
+// 	if err != nil {
+// 		if errors.Is(err, domain.ErrInvalidParams) || errors.Is(err, domain.ErrInvalidCredentials) {
+// 			http_error.ResponseBadRequest(c, &http_error.ErrorResponse{
+// 				Message: err.Error(),
+// 			})
+// 			return
+// 		}
+// 		http_error.ResponseInternalServerError(c, &http_error.ErrorResponse{
+// 			Message: err.Error(),
+// 		})
+// 		return
+// 	}
 
-	// 返回成功響應
-	c.JSON(http.StatusOK, &usecase.SignInResult{
-		AccessToken: result.AccessToken,
-	})
-}
+// 	// 返回成功響應
+// 	c.JSON(http.StatusOK, &usecase.SignInResult{
+// 		AccessToken: result.AccessToken,
+// 	})
+// }
