@@ -24,17 +24,23 @@ Portal Link 是一個文檔管理平台，使用 Go 後端和 MkDocs 生成文�
 - Docker & Docker Compose
 - Python 3.9+ (用於 MkDocs)
 
-### 2. 啟動資料庫
+### 2. 複製配置檔案
+```bash
+# 複製 API 測試範例檔案（可選）
+cp docs/api_example/api.http.example docs/api_example/api.http
+```
+
+### 3. 啟動資料庫
 ```bash
 docker-compose up -d
 ```
 
-### 3. 安裝 Goose（資料庫遷移工具）
+### 4. 安裝 Goose（資料庫遷移工具）
 ```bash
 go install github.com/pressly/goose/v3/cmd/goose@latest
 ```
 
-### 4. 執行資料庫遷移
+### 5. 執行資料庫遷移
 ```bash
 # 執行遷移
 goose -dir migrations postgres "host=localhost port=5432 user=postgres password=postgres dbname=portal_link sslmode=disable search_path=portal_link" up
@@ -46,7 +52,7 @@ goose -dir migrations postgres "host=localhost port=5432 user=postgres password=
 goose -dir migrations postgres "host=localhost port=5432 user=postgres password=postgres dbname=portal_link sslmode=disable search_path=portal_link" status
 ```
 
-### 5. 安裝 MkDocs
+### 6. 安裝 MkDocs
 ```bash
 python3 -m pip install mkdocs mkdocs-material
 ```
@@ -106,7 +112,7 @@ sqlboiler psql
 # 進入前端目錄
 cd web
 
-# 安裝依賴（首次運行）
+# 安裝依賴（首次運行時執行）
 npm install
 
 # 啟動前端開發服務器
