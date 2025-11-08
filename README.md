@@ -20,6 +20,7 @@ Portal Link 是一個文檔管理平台，使用 Go 後端和 MkDocs 生成文�
 
 ### 1. 環境要求
 - Go 1.24+
+- Node.js 20+ (用於前端開發)
 - Docker & Docker Compose
 - Python 3.9+ (用於 MkDocs)
 
@@ -89,13 +90,32 @@ python3 -m pip install mkdocs mkdocs-material
 
 ## 開發指令
 
+### 後端
+
 ```bash
 # 啟動後端
 go run main.go
 
 # 生成 SQLBoiler 模型
 sqlboiler psql
+```
 
+### 前端
+
+```bash
+# 進入前端目錄
+cd web
+
+# 安裝依賴（首次運行）
+npm install
+
+# 啟動前端開發服務器
+npm run dev
+```
+
+### 文檔
+
+```bash
 # 啟動 MkDocs 文檔服務
 mkdocs serve
 ```
